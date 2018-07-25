@@ -1,0 +1,326 @@
+---
+title: "Supplementary Material"
+author: "Gerry Tonkin-Hill"
+date: "`r Sys.Date()`"
+output: 
+  html_document:
+    fig_width: 12
+    fig_height: 8
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r global_options, include=FALSE}
+knitr::opts_chunk$set(fig.width=20, fig.height=12,
+                      echo=TRUE, warning=FALSE, message=FALSE,
+                      tidy=TRUE)
+options(stringsAsFactors = FALSE)
+```
+
+## Libraries
+
+```{r}
+library(fastbaps)
+library(rhierbaps)
+library(ggtree)
+library(phytools)
+library(ggtree)
+library(ggplot2)
+library(data.table)
+library(patchwork)
+library(stringr)
+library(dplyr)
+
+
+set.seed(1234)
+```
+
+```{r}
+plot_custom_ggtree <- function(tree, multi.baps, multi.hc, multi.flat, hb, bbp){
+  colnames(multi.baps)[2:ncol(multi.baps)] <- paste("baps", colnames(multi.baps)[2:ncol(multi.baps)], sep="_")
+  colnames(multi.hc)[2:ncol(multi.hc)] <- paste("hc", colnames(multi.hc)[2:ncol(multi.hc)], sep="_")
+  colnames(multi.flat)[2:ncol(multi.flat)] <- paste("flat", colnames(multi.flat)[2:ncol(multi.flat)], sep="_")
+  
+  multi <- merge(multi.baps, multi.hc, by.x = "Isolates", by.y="Isolates")
+  multi <- merge(multi, multi.flat, by.x = "Isolates", by.y="Isolates")
+  
+  multi$bbp.tree <- bbp[match(multi$Isolates, names(bbp))]
+  multi$HB1 <- hb$`level 1`[match(multi$Isolates, hb$Isolate)]
+  multi$HB2 <- hb$`level 2`[match(multi$Isolates, hb$Isolate)]
+
+  
+  gg <- ggtree(tree)
+  f1 <- facet_plot(gg, panel="hierBAPS L1", data=multi, geom=geom_tile, aes(x=HB1), fill='#e41a1c')
+  f1 <- facet_plot(f1, panel="hierBAPS L2", data=multi, geom=geom_tile, aes(x=HB2), fill='#377eb8')
+  f1 <- facet_plot(f1, panel="Level 1 - BAPS prior", data=multi, geom=geom_tile, aes(x=`baps_Level 1`), fill='#4daf4a')
+  f1 <- facet_plot(f1, panel="Level 2 - BAPS prior", data=multi, geom=geom_tile, aes(x=`baps_Level 2`), fill='#984ea3')
+  f1 <- facet_plot(f1, panel="Level 1 - HC prior", data=multi, geom=geom_tile, aes(x=`hc_Level 1`), fill='#ff7f00')
+  f1 <- facet_plot(f1, panel="Level 2 - HC prior", data=multi, geom=geom_tile, aes(x=`hc_Level 2`), fill='#f781bf')
+  f1 <- facet_plot(f1, panel="Level 1 - flat prior", data=multi, geom=geom_tile, aes(x=`flat_Level 1`), fill='#b2df8a')
+  f1 <- facet_plot(f1, panel="Level 2 - flat prior", data=multi, geom=geom_tile, aes(x=`flat_Level 2`), fill='#cab2d6')
+  f1 <- facet_plot(f1, panel="bbp.tree", data=multi, geom=geom_tile, aes(x=bbp.tree), fill='#a65628')
+  return(f1)
+}
+
+plot_custom_ggtree_nohb <- function(tree, multi.baps, multi.hc, multi.flat, bbp){
+  colnames(multi.baps)[2:ncol(multi.baps)] <- paste("baps", colnames(multi.baps)[2:ncol(multi.baps)], sep="_")
+  colnames(multi.hc)[2:ncol(multi.hc)] <- paste("hc", colnames(multi.hc)[2:ncol(multi.hc)], sep="_")
+  colnames(multi.flat)[2:ncol(multi.flat)] <- paste("flat", colnames(multi.flat)[2:ncol(multi.flat)], sep="_")
+  
+  multi <- merge(multi.baps, multi.hc, by.x = "Isolates", by.y="Isolates")
+  multi <- merge(multi, multi.flat, by.x = "Isolates", by.y="Isolates")
+  
+  multi$bbp.tree <- bbp[match(multi$Isolates, names(bbp))]
+
+  gg <- ggtree(tree)
+  f1 <- facet_plot(gg, panel="Level 1 - BAPS prior", data=multi, geom=geom_tile, aes(x=`baps_Level 1`), fill='#4daf4a')
+  f1 <- facet_plot(f1, panel="Level 2 - BAPS prior", data=multi, geom=geom_tile, aes(x=`baps_Level 2`), fill='#984ea3')
+  f1 <- facet_plot(f1, panel="Level 1 - HC prior", data=multi, geom=geom_tile, aes(x=`hc_Level 1`), fill='#ff7f00')
+  f1 <- facet_plot(f1, panel="Level 2 - HC prior", data=multi, geom=geom_tile, aes(x=`hc_Level 2`), fill='#f781bf')
+  f1 <- facet_plot(f1, panel="Level 1 - flat prior", data=multi, geom=geom_tile, aes(x=`flat_Level 1`), fill='#b2df8a')
+  f1 <- facet_plot(f1, panel="Level 2 - flat prior", data=multi, geom=geom_tile, aes(x=`flat_Level 2`), fill='#cab2d6')
+  f1 <- facet_plot(f1, panel="bbp.tree", data=multi, geom=geom_tile, aes(x=bbp.tree), fill='#b2df8a')
+  return(f1)
+}
+```
+
+##Escherichia Coli
+
+```{r, cache=TRUE}
+e.coli.data <- import_fasta_sparse_nt("./data/escherichia_coli/escherichia_coli_core_gene_alignment.snps.aln", prior = "baps")
+dim(e.coli.data$snp.matrix)
+
+e.coli.multi.baps <- multi_res_baps(e.coli.data, levels = 2, n.cores = 4)
+
+e.coli.data <- optimise_prior(e.coli.data, type = "hc", n.cores = 4)
+e.coli.multi.hc <- multi_res_baps(e.coli.data, levels = 2, n.cores = 4)
+
+e.coli.data <- optimise_prior(e.coli.data, type = "flat", n.cores = 4)
+e.coli.multi.flat <- multi_res_baps(e.coli.data, levels = 2, n.cores = 4)
+
+e.coli.hb <- fread("./data/escherichia_coli/hierbaps_partition.csv", data.table = FALSE)
+e.coli.hb <- e.coli.hb[match(e.coli.multi.baps$Isolates, e.coli.hb$Isolate),]
+e.coli.tree <- phytools::read.newick("./data/escherichia_coli/escherichia_coli_core_gene_alignment.snps.aln.fasttree")
+e.coli.tree <- phytools::midpoint.root(e.coli.tree)
+e.coli.bbp.tree <- fastbaps::best_baps_partition(e.coli.data, e.coli.tree)
+
+plot_custom_ggtree(tree = e.coli.tree, multi.baps = e.coli.multi.baps,
+                   multi.hc = e.coli.multi.hc,
+                   multi.flat = e.coli.multi.flat,
+                   hb = e.coli.hb, bbp = e.coli.bbp.tree)
+```
+
+##Haemophilus Influenzae
+
+```{r, cache=TRUE}
+h.inf.data <- import_fasta_sparse_nt("./data/haemophilus_influenzae/haemophilus_influenzae_core_gene_snps.aln", prior = "baps")
+dim(h.inf.data$snp.matrix)
+
+h.inf.multi.baps <- multi_res_baps(h.inf.data, levels = 2, n.cores = 4)
+
+h.inf.data <- optimise_prior(h.inf.data, type = "hc", n.cores = 4)
+h.inf.multi.hc <- multi_res_baps(h.inf.data, levels = 2, n.cores = 4)
+
+h.inf.data <- optimise_prior(h.inf.data, type = "flat", n.cores = 4)
+h.inf.multi.flat <- multi_res_baps(h.inf.data, levels = 2, n.cores = 4) 
+
+
+
+h.inf.hb <- fread("./data/haemophilus_influenzae/hierbaps_partition.csv", data.table = FALSE)
+h.inf.hb <- h.inf.hb[match(h.inf.multi.baps$Isolates, h.inf.hb$Isolate),]
+h.inf.tree <- phytools::read.newick("./data/haemophilus_influenzae/haemophilus_influenzae_core_gene_snps.aln.fasttree")
+h.inf.tree <- phytools::midpoint.root(h.inf.tree)
+h.inf.bbp.tree <- fastbaps::best_baps_partition(h.inf.data, h.inf.tree)
+
+plot_custom_ggtree(tree = h.inf.tree, multi.baps = h.inf.multi.baps,
+                   multi.hc = h.inf.multi.hc,
+                   multi.flat = h.inf.multi.flat,
+                   hb = h.inf.hb, bbp = h.inf.bbp.tree)
+```
+
+
+##Listeria Monocytogenes
+
+```{r, cache=TRUE}
+listeria.data <- fastbaps::import_fasta_sparse_nt("./data/listeria_monocytogenes/listeria_monocytogenes_core_gene_snps.aln", prior = "baps")
+colnames(listeria.data$snp.matrix) <- gsub("#", "_", colnames(listeria.data$snp.matrix))
+dim(listeria.data$snp.matrix)
+
+listeria.multi.baps <- multi_res_baps(listeria.data, levels = 2, n.cores = 4)
+
+listeria.data <- optimise_prior(listeria.data, type = "hc", n.cores = 4)
+listeria.multi.hc <- multi_res_baps(listeria.data, levels = 2, n.cores = 4)
+
+listeria.data <- optimise_prior(listeria.data, type = "flat", n.cores = 4)
+listeria.multi.flat <- multi_res_baps(listeria.data, levels = 2, n.cores = 4)
+
+listeria.hb <- fread("./data/listeria_monocytogenes/hierbaps_partition.csv", data.table = FALSE)
+listeria.hb$Isolate <- gsub("#", "_", listeria.hb$Isolate)
+listeria.hb <- listeria.hb[match(listeria.multi.hc$Isolates, listeria.hb$Isolate),]
+
+listeria.tree <- ape::read.tree("./data/listeria_monocytogenes/listeria_monocytogenes_core_gene_snps.aln.treefile")
+listeria.tree <- phytools::midpoint.root(listeria.tree)
+listeria.bbp.tree <- fastbaps::best_baps_partition(listeria.data, listeria.tree)
+
+plot_custom_ggtree(tree = listeria.tree, multi.baps = listeria.multi.baps,
+                   multi.hc = listeria.multi.hc,
+                   multi.flat = listeria.multi.flat,
+                   hb = listeria.hb, bbp = listeria.bbp.tree)
+```
+
+##Neisseria Meningitidis
+
+```{r, cache=TRUE}
+n.meng.data <- import_fasta_sparse_nt("./data/neisseria_meningitidis/neisseria_meningitidis_core_gene_snps.aln", prior = "baps")
+dim(n.meng.data$snp.matrix)
+
+n.meng.multi.baps <- multi_res_baps(n.meng.data, levels = 2, n.cores = 4)
+
+n.meng.data <- optimise_prior(n.meng.data, type = "hc", n.cores = 4)
+
+n.meng.multi.hc <- multi_res_baps(n.meng.data, levels = 2, n.cores = 4)
+
+n.meng.data <- optimise_prior(n.meng.data, type = "flat", n.cores = 4)
+
+n.meng.multi.flat <- multi_res_baps(n.meng.data, levels = 2, n.cores = 4)
+
+
+n.meng.hb <- fread("./data/neisseria_meningitidis/hierbaps_partition.csv", data.table = FALSE)
+n.meng.hb <- n.meng.hb[match(n.meng.multi.baps$Isolates, n.meng.hb$Isolate),]
+n.meng.tree <- phytools::read.newick("./data/neisseria_meningitidis/neisseria_meningitidis_core_gene_snps.aln.fasttree")
+n.meng.tree <- phytools::midpoint.root(n.meng.tree)
+n.meng.bbp.tree <- fastbaps::best_baps_partition(n.meng.data, n.meng.tree)
+
+plot_custom_ggtree(n.meng.tree, multi.baps = n.meng.multi.baps,
+                   multi.hc = n.meng.multi.hc,
+                   multi.flat = n.meng.multi.flat,
+                   hb = n.meng.hb, bbp = n.meng.bbp.tree)
+```
+
+
+##Staphylococcus Aureus 
+
+```{r, cache=TRUE}
+s.aus.data <- import_fasta_sparse_nt("./data/staphylococcus_aureus/staphylococcus_aureus_core_gene_alignment.snps.aln", prior = "baps")
+dim(s.aus.data$snp.matrix)
+
+s.aus.multi.baps <- multi_res_baps(s.aus.data, levels = 2, n.cores = 4)
+
+s.aus.data <- optimise_prior(s.aus.data, type = "hc", n.cores=4)
+
+s.aus.multi.hc <- multi_res_baps(s.aus.data, levels = 2, n.cores = 4)
+
+s.aus.data <- optimise_prior(s.aus.data, type = "flat", n.cores = 4)
+
+s.aus.multi.flat <- multi_res_baps(s.aus.data, levels = 2, n.cores = 4)
+
+s.aus.hb <- fread("./data/staphylococcus_aureus/hierbaps_partition.csv", data.table = FALSE)
+s.aus.hb <- s.aus.hb[match(s.aus.multi.baps$Isolates, s.aus.hb$Isolate),]
+s.aus.tree <- phytools::read.newick("./data/staphylococcus_aureus/staphylococcus_aureus_core_gene_alignment.snps.aln.fasttree")
+s.aus.tree <- phytools::midpoint.root(s.aus.tree)
+s.aus.bbp.tree <- fastbaps::best_baps_partition(s.aus.data, s.aus.tree)
+
+plot_custom_ggtree(s.aus.tree, multi.baps = s.aus.multi.baps,
+                   multi.flat = s.aus.multi.flat,
+                   multi.hc = s.aus.multi.hc,
+                   hb = s.aus.hb, bbp = s.aus.bbp.tree)
+```
+
+##Ebola
+
+```{r, cache=TRUE}
+ebola.data <- import_fasta_sparse_nt("./data/ebola/Makona_1610_cds_ig.fas", prior = "baps")
+dim(ebola.data$snp.matrix)
+
+ebola.multi.baps <- multi_res_baps(ebola.data, levels = 2, n.cores = 4)
+
+ebola.data <- optimise_prior(ebola.data, type = "hc", n.cores = 4)
+
+ebola.multi.hc <- multi_res_baps(ebola.data, levels = 2, n.cores = 4)
+
+ebola.data <- optimise_prior(ebola.data, type = "flat", n.cores = 4)
+
+ebola.multi.flat <- multi_res_baps(ebola.data, levels = 2, n.cores = 4)
+
+ebola.tree <- phytools::read.newick("./data/ebola/Makona_1610_cds_ig_iqtree_allnni.treefile")
+plot(ebola.tree, show.tip.label = FALSE)
+ebola.tree <- phytools::midpoint.root(ebola.tree)
+ebola.bbp.tree <- fastbaps::best_baps_partition(ebola.data, ebola.tree)
+
+plot_custom_ggtree_nohb(tree = ebola.tree, multi.baps = ebola.multi.baps,
+                        multi.hc = ebola.multi.hc,
+                        multi.flat = ebola.multi.flat,
+                        bbp = ebola.bbp.tree)
+```
+
+##HIV
+
+```{r, cache=TRUE}
+hiv.data <- import_fasta_sparse_nt("./data/HIV/hiv_refs_prrt_trim.fas", prior = "baps")
+dim(hiv.data$snp.matrix)
+```
+
+```{r, eval=FALSE}
+system.time({hiv.multi <- multi_res_baps(hiv.data, levels = 2, n.cores = 4)})
+
+write.csv(hiv.multi, file="hiv_multi_baps_prior.csv", quote=FALSE)
+```
+
+```{r, eval=FALSE}
+hiv.data <- optimise_prior(hiv.data, type = "hc", n.cores = 4)
+
+system.time({hiv.multi <- multi_res_baps(hiv.data, levels = 2, n.cores = 4, k.init = 11000)})
+
+write.csv(hiv.multi, file="hiv_multi_hc_prior.csv", quote=FALSE)
+```
+
+```{r}
+hiv.multi.hc <- fread("./processed_data/hiv_multi_hc_prior.csv", data.table = FALSE)
+
+hiv.multi.baps <- fread("./processed_data/hiv_multi_baps_prior.csv", data.table = FALSE)
+
+hiv.multi.flat <- fread("./processed_data/hiv_multi_flat_kinit11000_l5_prior.csv", data.table = FALSE)
+hiv.multi.flat$V1 <- NULL
+```
+
+
+```{r}
+combined.df <- stringr::str_split_fixed(hiv.multi.flat$Isolates, pattern = "\\|", n = 4)
+colnames(combined.df) <- c("Isolate", "Type", "Country", "Date")
+combined.df <- cbind(combined.df, hiv.multi.flat[,2:ncol(hiv.multi.flat)])
+```
+
+Choose a pretty silly outgroup as the earliest sample.
+
+```{r, eval=FALSE}
+hiv.data <- import_fasta_sparse_nt("./data/HIV/hiv_refs_prrt_trim.fas", prior = "baps")
+min(as.numeric(combined.df$Date),na.rm = TRUE)
+combined.df[combined.df$Date=="1976",]
+
+hiv.tree <- phytools::read.newick("./data/HIV/hiv_refs_prrt_trim.fas.fasttree")
+hiv.tree <- ape::root(hiv.tree, outgroup = "U76035|A1GU|DEMREPOFCONGO|1976", resolve.root=TRUE)
+# hiv.bbp.tree <- fastbaps::best_baps_partition(hiv.data, hiv.tree)
+
+# gg <- ggtree(hiv.tree)
+# f1 <- facet_plot(f1, panel="Level 1 - BAPS prior", data=hiv.multi.baps, geom=geom_tile, aes(x=`Level 1`), fill='#4daf4a')
+# f1 <- facet_plot(f1, panel="Level 2 - BAPS prior", data=hiv.multi.baps, geom=geom_tile, aes(x=`Level 2`), fill='#984ea3')
+# f1
+```
+
+Look at clustering by type
+
+```{r, fig.height=40, fig.width=12}
+cluster.types <- lapply(1:max(combined.df$`Level 3`), function(x){
+  tb <- table(combined.df$Type[combined.df$`Level 3`==x])
+  tb[order(tb)]
+})
+cluster.types[order(unlist(lapply(cluster.types, length)))]
+
+cluster.country <- lapply(1:max(combined.df$`Level 1`), function(x){
+  tb <- table(combined.df$Country[combined.df$`Level 1`==x])
+  tb[order(tb)]
+})
+
+ggplot(combined.df, aes(x=Type)) + geom_bar() + facet_wrap(~`Level 1`, scales = "free", ncol = 5)
+
+```
