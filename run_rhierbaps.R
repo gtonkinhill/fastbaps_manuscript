@@ -3,7 +3,7 @@ library(rhierbaps)
 args <- commandArgs(trailingOnly=TRUE)
 
 fasta.file.name <- args[[1]]
-n.pops <- args[[2]]
+n.pops <- as.numeric(args[[2]])
 
 snp.matrix <- load_fasta(fasta.file.name)
 hb.results <- hierBAPS(snp.matrix, max.depth = 2, n.pops = n.pops, quiet = FALSE, n.cores = 5)
