@@ -201,7 +201,7 @@ plot_custom_ggtree(n.meng.tree, multi.baps = n.meng.multi.baps,
 ##Staphylococcus Aureus 
 
 ```{r, cache=TRUE}
-s.aus.data <- import_fasta_sparse_nt("./data/staphylococcus_aureus/staphylococcus_aureus_core_gene_alignment.snps.aln", prior = "baps")
+  s.aus.data <- import_fasta_sparse_nt("./data/staphylococcus_aureus/staphylococcus_aureus_core_gene_alignment.snps.aln", prior = "baps")
 dim(s.aus.data$snp.matrix)
 
 s.aus.multi.baps <- multi_res_baps(s.aus.data, levels = 2, n.cores = 4)
