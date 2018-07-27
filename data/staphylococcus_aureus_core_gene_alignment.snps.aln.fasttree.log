@@ -1,0 +1,96 @@
+FastTree Version 2.1.10 Double precision (No SSE3)
+Alignment: staphylococcus_aureus_core_gene_alignment.snps.aln
+Nucleotide distances: Jukes-Cantor Joins: balanced Support: SH-like 1000
+Search: Normal +NNI +SPR (2 rounds range 10) +ML-NNI opt-each=1
+TopHits: 1.00*sqrtN close=default refresh=0.80
+ML Model: Jukes-Cantor, CAT approximation with 20 rate categories
+Ignored unknown character X (seen 91 times)
+      0.81 seconds: Top hits for    109 of    284 seqs (at seed    100)
+      1.37 seconds: Top hits for    260 of    284 seqs (at seed    200)
+      1.65 seconds: Checking top hits for      1 of    284 seqs
+      6.56 seconds: Joined    100 of    281
+     10.63 seconds: Joined    200 of    281
+Initial topology in 12.79 seconds
+Refining topology: 33 rounds ME-NNIs, 2 rounds ME-SPRs, 16 rounds ML-NNIs
+     12.79 seconds: ME NNI round 1 of 33, 1 of 282 splits
+     13.28 seconds: ME NNI round 1 of 33, 101 of 282 splits, 31 changes (max delta 0.002)
+     13.72 seconds: ME NNI round 1 of 33, 201 of 282 splits, 67 changes (max delta 0.002)
+     13.99 seconds: ME NNI round 2 of 33, 1 of 282 splits
+     14.39 seconds: ME NNI round 2 of 33, 101 of 282 splits, 15 changes (max delta 0.000)
+     14.78 seconds: ME NNI round 2 of 33, 201 of 282 splits, 35 changes (max delta 0.000)
+     15.11 seconds: ME NNI round 3 of 33, 1 of 282 splits
+     15.55 seconds: ME NNI round 3 of 33, 101 of 282 splits, 12 changes (max delta 0.000)
+     15.91 seconds: ME NNI round 4 of 33, 1 of 282 splits
+     16.32 seconds: ME NNI round 4 of 33, 101 of 282 splits, 20 changes (max delta 0.000)
+     16.82 seconds: ME NNI round 5 of 33, 101 of 282 splits, 8 changes (max delta 0.000)
+     17.12 seconds: ME NNI round 7 of 33, 1 of 282 splits
+     23.18 seconds: SPR round   1 of   2, 101 of 566 nodes
+     28.80 seconds: SPR round   1 of   2, 201 of 566 nodes
+     33.97 seconds: SPR round   1 of   2, 301 of 566 nodes
+     39.48 seconds: SPR round   1 of   2, 401 of 566 nodes
+     45.61 seconds: SPR round   1 of   2, 501 of 566 nodes
+     48.69 seconds: ME NNI round 12 of 33, 1 of 282 splits
+     49.10 seconds: ME NNI round 12 of 33, 101 of 282 splits, 0 changes
+     49.50 seconds: ME NNI round 12 of 33, 201 of 282 splits, 0 changes
+     49.81 seconds: SPR round   2 of   2, 1 of 566 nodes
+     55.15 seconds: SPR round   2 of   2, 101 of 566 nodes
+     60.50 seconds: SPR round   2 of   2, 201 of 566 nodes
+     66.29 seconds: SPR round   2 of   2, 301 of 566 nodes
+     71.66 seconds: SPR round   2 of   2, 401 of 566 nodes
+     77.86 seconds: SPR round   2 of   2, 501 of 566 nodes
+     80.98 seconds: ME NNI round 23 of 33, 1 of 282 splits
+     81.36 seconds: ME NNI round 23 of 33, 101 of 282 splits, 0 changes
+     81.75 seconds: ME NNI round 23 of 33, 201 of 282 splits, 0 changes
+Total branch-length 1.917 after 83.38 sec
+     83.58 seconds: ML Lengths 1 of 282 splits
+     86.63 seconds: ML Lengths 101 of 282 splits
+     89.81 seconds: ML Lengths 201 of 282 splits
+     92.46 seconds: ML NNI round 1 of 16, 1 of 282 splits
+    103.15 seconds: ML NNI round 1 of 16, 101 of 282 splits, 19 changes (max delta 42.900)
+    114.20 seconds: ML NNI round 1 of 16, 201 of 282 splits, 46 changes (max delta 228.757)
+ML-NNI round 1: LogLk = -611877.107 NNIs 64 max delta 228.76 Time 122.92
+    123.42 seconds: Site likelihoods with rate category 1 of 20
+    123.89 seconds: Site likelihoods with rate category 2 of 20
+    124.50 seconds: Site likelihoods with rate category 3 of 20
+    124.98 seconds: Site likelihoods with rate category 4 of 20
+    125.47 seconds: Site likelihoods with rate category 5 of 20
+    125.96 seconds: Site likelihoods with rate category 6 of 20
+    126.50 seconds: Site likelihoods with rate category 7 of 20
+    126.99 seconds: Site likelihoods with rate category 8 of 20
+    127.52 seconds: Site likelihoods with rate category 9 of 20
+    128.00 seconds: Site likelihoods with rate category 10 of 20
+    128.49 seconds: Site likelihoods with rate category 11 of 20
+    129.03 seconds: Site likelihoods with rate category 12 of 20
+    129.50 seconds: Site likelihoods with rate category 13 of 20
+    129.98 seconds: Site likelihoods with rate category 14 of 20
+    130.46 seconds: Site likelihoods with rate category 15 of 20
+    131.07 seconds: Site likelihoods with rate category 16 of 20
+    131.52 seconds: Site likelihoods with rate category 17 of 20
+    132.02 seconds: Site likelihoods with rate category 18 of 20
+    132.50 seconds: Site likelihoods with rate category 19 of 20
+    133.01 seconds: Site likelihoods with rate category 20 of 20
+Switched to using 20 rate categories (CAT approximation)
+Rate categories were divided by 0.833 so that average rate = 1.0
+CAT-based log-likelihoods may not be comparable across runs
+Use -gamma for approximate but comparable Gamma(20) log-likelihoods
+    133.63 seconds: ML NNI round 2 of 16, 1 of 282 splits
+    139.86 seconds: ML NNI round 2 of 16, 101 of 282 splits, 6 changes (max delta 129.158)
+    146.27 seconds: ML NNI round 2 of 16, 201 of 282 splits, 13 changes (max delta 129.158)
+ML-NNI round 2: LogLk = -589432.106 NNIs 24 max delta 129.16 Time 152.90
+    152.89 seconds: ML NNI round 3 of 16, 1 of 282 splits
+    157.91 seconds: ML NNI round 3 of 16, 101 of 282 splits, 4 changes (max delta 1.170)
+ML-NNI round 3: LogLk = -589428.692 NNIs 7 max delta 2.03 Time 162.83
+    162.83 seconds: ML NNI round 4 of 16, 1 of 282 splits
+ML-NNI round 4: LogLk = -589428.689 NNIs 3 max delta 0.00 Time 167.19
+Turning off heuristics for final round of ML NNIs (converged)
+    167.18 seconds: ML NNI round 5 of 16, 1 of 282 splits
+    177.47 seconds: ML NNI round 5 of 16, 101 of 282 splits, 0 changes
+    187.77 seconds: ML NNI round 5 of 16, 201 of 282 splits, 4 changes (max delta 0.000)
+ML-NNI round 5: LogLk = -589426.351 NNIs 4 max delta 0.00 Time 196.53 (final)
+    196.52 seconds: ML Lengths 1 of 282 splits
+    199.19 seconds: ML Lengths 101 of 282 splits
+    201.89 seconds: ML Lengths 201 of 282 splits
+Optimize all lengths: LogLk = -589426.351 Time 204.33
+    265.68 seconds: ML split tests for    100 of    281 internal splits
+    322.35 seconds: ML split tests for    200 of    281 internal splits
+Total time: 368.69 seconds Unique: 284/284 Bad splits: 0/281

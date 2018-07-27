@@ -1,0 +1,56 @@
+FastTree Version 2.1.10 Double precision (No SSE3)
+Alignment: haemophilus_influenzae_core_gene_snps.aln
+Nucleotide distances: Jukes-Cantor Joins: balanced Support: SH-like 1000
+Search: Normal +NNI +SPR (2 rounds range 10) +ML-NNI opt-each=1
+TopHits: 1.00*sqrtN close=default refresh=0.80
+ML Model: Jukes-Cantor, CAT approximation with 20 rate categories
+      0.43 seconds: Checking top hits for      1 of     72 seqs
+Initial topology in 3.55 seconds
+Refining topology: 25 rounds ME-NNIs, 2 rounds ME-SPRs, 12 rounds ML-NNIs
+      3.55 seconds: ME NNI round 1 of 25, 1 of 70 splits
+      4.22 seconds: ME NNI round 2 of 25, 1 of 70 splits
+      4.87 seconds: ME NNI round 3 of 25, 1 of 70 splits
+      5.15 seconds: SPR round   1 of   2, 1 of 142 nodes
+     23.99 seconds: SPR round   1 of   2, 101 of 142 nodes
+     31.26 seconds: ME NNI round 9 of 25, 1 of 70 splits
+     31.88 seconds: SPR round   2 of   2, 1 of 142 nodes
+     50.70 seconds: SPR round   2 of   2, 101 of 142 nodes
+     57.95 seconds: ME NNI round 17 of 25, 1 of 70 splits
+Total branch-length 3.551 after 59.34 sec
+     59.44 seconds: ML Lengths 1 of 70 splits
+     64.67 seconds: ML NNI round 1 of 12, 1 of 70 splits
+ML-NNI round 1: LogLk = -2024112.567 NNIs 6 max delta 784.32 Time 83.41
+     83.65 seconds: Site likelihoods with rate category 1 of 20
+     83.89 seconds: Site likelihoods with rate category 2 of 20
+     84.14 seconds: Site likelihoods with rate category 3 of 20
+     84.38 seconds: Site likelihoods with rate category 4 of 20
+     84.62 seconds: Site likelihoods with rate category 5 of 20
+     84.87 seconds: Site likelihoods with rate category 6 of 20
+     85.11 seconds: Site likelihoods with rate category 7 of 20
+     85.35 seconds: Site likelihoods with rate category 8 of 20
+     85.59 seconds: Site likelihoods with rate category 9 of 20
+     85.83 seconds: Site likelihoods with rate category 10 of 20
+     86.07 seconds: Site likelihoods with rate category 11 of 20
+     86.32 seconds: Site likelihoods with rate category 12 of 20
+     86.58 seconds: Site likelihoods with rate category 13 of 20
+     86.88 seconds: Site likelihoods with rate category 14 of 20
+     87.18 seconds: Site likelihoods with rate category 15 of 20
+     87.44 seconds: Site likelihoods with rate category 16 of 20
+     87.69 seconds: Site likelihoods with rate category 17 of 20
+     87.93 seconds: Site likelihoods with rate category 18 of 20
+     88.18 seconds: Site likelihoods with rate category 19 of 20
+     88.44 seconds: Site likelihoods with rate category 20 of 20
+Switched to using 20 rate categories (CAT approximation)
+Rate categories were divided by 0.870 so that average rate = 1.0
+CAT-based log-likelihoods may not be comparable across runs
+Use -gamma for approximate but comparable Gamma(20) log-likelihoods
+     88.83 seconds: ML NNI round 2 of 12, 1 of 70 splits
+ML-NNI round 2: LogLk = -1926461.428 NNIs 1 max delta 50.53 Time 96.35
+     96.34 seconds: ML NNI round 3 of 12, 1 of 70 splits
+ML-NNI round 3: LogLk = -1926455.038 NNIs 0 max delta 0.00 Time 98.36
+Turning off heuristics for final round of ML NNIs (converged)
+     98.36 seconds: ML NNI round 4 of 12, 1 of 70 splits
+ML-NNI round 4: LogLk = -1926409.072 NNIs 0 max delta 0.00 Time 117.24 (final)
+    117.23 seconds: ML Lengths 1 of 70 splits
+Optimize all lengths: LogLk = -1926408.872 Time 121.71
+Total time: 225.07 seconds Unique: 72/75 Bad splits: 0/69
