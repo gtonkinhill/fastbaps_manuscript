@@ -129,26 +129,37 @@ plot_custom_ggtree(tree = e.coli.tree, multi.baps = e.coli.multi.baps,
 h.inf.data <- import_fasta_sparse_nt("./data/haemophilus_influenzae/haemophilus_influenzae_core_gene_snps.aln", prior = "baps")
 dim(h.inf.data$snp.matrix)
 
+# keep <- sample(1:103850, 1e2)
+# h.inf.data$snp.matrix <-  h.inf.data$snp.matrix[keep, ]
+# h.inf.data$prior <- h.inf.data$prior[, keep]
+
 h.inf.multi.baps <- multi_res_baps(h.inf.data, levels = 2, n.cores = 4)
 
 h.inf.data <- optimise_prior(h.inf.data, type = "hc", n.cores = 4)
 h.inf.multi.hc <- multi_res_baps(h.inf.data, levels = 2, n.cores = 4)
 
 h.inf.data <- optimise_prior(h.inf.data, type = "flat", n.cores = 4)
-h.inf.multi.flat <- multi_res_baps(h.inf.data, levels = 2, n.cores = 4) 
-
-
+h.inf.multi.flat <- multi_res_baps(h.inf.data, levels = 2, n.cores = 4, k.init = 10) 
 
 h.inf.hb <- fread("./data/haemophilus_influenzae_core_gene_snps_hierbaps_partition.csv", data.table = FALSE)
 h.inf.hb <- h.inf.hb[match(h.inf.multi.baps$Isolates, h.inf.hb$Isolate),]
+
+h.inf.snap <- fread("./data/haemophilus_influenzae/haemophilus_influenzae_core_gene_snps_snapclust_results.csv", 
+                    data.table = FALSE)
+h.inf.sum <- fread("./data/haemophilus_influenzae/haemophilus_influenzae_core_gene_snps_snapclust_run_summary.csv", 
+                    data.table = FALSE)
+h.inf.snap.aic <- h.inf.snap[,h.inf.sum$K[which.min(h.inf.sum$AIC)]]
+names(h.inf.snap.aic) <- h.inf.snap$Isolate
+
 h.inf.tree <- phytools::read.newick("./data/haemophilus_influenzae/haemophilus_influenzae_core_gene_snps.aln.fasttree")
 h.inf.tree <- phytools::midpoint.root(h.inf.tree)
 h.inf.bbp.tree <- fastbaps::best_baps_partition(h.inf.data, h.inf.tree)
 
-plot_custom_ggtree(tree = h.inf.tree, multi.baps = h.inf.multi.baps,
+plot_custom_ggtree_snap(tree = h.inf.tree, multi.baps = h.inf.multi.baps,
                    multi.hc = h.inf.multi.hc,
                    multi.flat = h.inf.multi.flat,
-                   hb = h.inf.hb, bbp = h.inf.bbp.tree)
+                   hb = h.inf.hb, bbp = h.inf.bbp.tree,
+                   snap = h.inf.snap.aic)
 ```
 
 
