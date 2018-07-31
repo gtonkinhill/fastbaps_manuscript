@@ -22,4 +22,10 @@ FILE="./data/ebola/Makona_1610_cds_ig.fas"
 NPOP=150
 nohup /usr/bin/time -v Rscript --vanilla ./fastbaps_manuscript/run_rhierbaps.R $FILE $NPOP > "${FILE}.log" 2>&1 &
 
+FILE="./data/maela/maela3k_snps.fasta"
+NPOP=200
+nohup /usr/bin/time -v Rscript --vanilla ./fastbaps_manuscript/run_rhierbaps.R $FILE $NPOP > "${FILE}.log" 2>&1 &
+
+
+
 

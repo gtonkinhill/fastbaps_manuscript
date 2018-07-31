@@ -16,4 +16,5 @@ nohup /usr/bin/time -v Rscript --vanilla ./fastbaps_manuscript/run_fastbaps.R $F
 FILE="./data/ebola/Makona_1610_cds_ig.fas"
 nohup /usr/bin/time -v Rscript --vanilla ./fastbaps_manuscript/run_fastbaps.R $FILE > "${FILE}_fastbaps.log" 2>&1 &
 
-
+FILE="./data/maela/maela3k_snps.fasta"
+nohup /usr/bin/time -v Rscript --vanilla ./fastbaps_manuscript/run_fastbaps.R $FILE > "${FILE}_fastbaps.log" 2>&1 &

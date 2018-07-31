@@ -62,7 +62,7 @@ plot_custom_ggtree <- function(tree, multi.baps, multi.hc, multi.flat, hb, bbp){
   return(f1)
 }
 
-plot_custom_ggtree_nohb <- function(tree, multi.baps, multi.hc, multi.flat, bbp){
+plot_custom_ggtree_snap <- function(tree, multi.baps, multi.hc, multi.flat, hb, bbp, snap){
   colnames(multi.baps)[2:ncol(multi.baps)] <- paste("baps", colnames(multi.baps)[2:ncol(multi.baps)], sep="_")
   colnames(multi.hc)[2:ncol(multi.hc)] <- paste("hc", colnames(multi.hc)[2:ncol(multi.hc)], sep="_")
   colnames(multi.flat)[2:ncol(multi.flat)] <- paste("flat", colnames(multi.flat)[2:ncol(multi.flat)], sep="_")
@@ -71,15 +71,21 @@ plot_custom_ggtree_nohb <- function(tree, multi.baps, multi.hc, multi.flat, bbp)
   multi <- merge(multi, multi.flat, by.x = "Isolates", by.y="Isolates")
   
   multi$bbp.tree <- bbp[match(multi$Isolates, names(bbp))]
+  multi$HB1 <- hb$`level 1`[match(multi$Isolates, hb$Isolate)]
+  multi$HB2 <- hb$`level 2`[match(multi$Isolates, hb$Isolate)]
+  multi$snap <- snap[match(multi$Isolates, names(snap))]
 
+  
   gg <- ggtree(tree)
-  f1 <- facet_plot(gg, panel="Level 1 - BAPS prior", data=multi, geom=geom_tile, aes(x=`baps_Level 1`), fill='#4daf4a')
+  f1 <- facet_plot(gg, panel="hierBAPS L1", data=multi, geom=geom_tile, aes(x=HB1), fill='#e41a1c')
+  f1 <- facet_plot(f1, panel="hierBAPS L2", data=multi, geom=geom_tile, aes(x=HB2), fill='#377eb8')
+  f1 <- facet_plot(f1, panel="Level 1 - BAPS prior", data=multi, geom=geom_tile, aes(x=`baps_Level 1`), fill='#4daf4a')
   f1 <- facet_plot(f1, panel="Level 2 - BAPS prior", data=multi, geom=geom_tile, aes(x=`baps_Level 2`), fill='#984ea3')
   f1 <- facet_plot(f1, panel="Level 1 - HC prior", data=multi, geom=geom_tile, aes(x=`hc_Level 1`), fill='#ff7f00')
-  f1 <- facet_plot(f1, panel="Level 2 - HC prior", data=multi, geom=geom_tile, aes(x=`hc_Level 2`), fill='#f781bf')
+  f1 <- facet_plot(f1, panel="snapclust AIC", data=multi, geom=geom_tile, aes(x=snap), fill='#f781bf')
   f1 <- facet_plot(f1, panel="Level 1 - flat prior", data=multi, geom=geom_tile, aes(x=`flat_Level 1`), fill='#b2df8a')
   f1 <- facet_plot(f1, panel="Level 2 - flat prior", data=multi, geom=geom_tile, aes(x=`flat_Level 2`), fill='#cab2d6')
-  f1 <- facet_plot(f1, panel="bbp.tree", data=multi, geom=geom_tile, aes(x=bbp.tree), fill='#b2df8a')
+  f1 <- facet_plot(f1, panel="bbp.tree", data=multi, geom=geom_tile, aes(x=bbp.tree), fill='#a65628')
   return(f1)
 }
 ```
@@ -87,7 +93,14 @@ plot_custom_ggtree_nohb <- function(tree, multi.baps, multi.hc, multi.flat, bbp)
 ##Escherichia Coli
 
 ```{r, cache=TRUE}
+system.time({
 e.coli.data <- import_fasta_sparse_nt("./data/escherichia_coli/escherichia_coli_core_gene_alignment.snps.aln", prior = "baps")
+e.coli.data <- optimise_prior(e.coli.data, type = "flat", n.cores = 4)
+e.coli.multi.flat <- multi_res_baps(e.coli.data, levels = 2, n.cores = 4)
+})
+
+e.coli.data <- import_fasta_sparse_nt("./data/escherichia_coli/escherichia_coli_core_gene_alignment.snps.aln", prior = "baps")
+
 dim(e.coli.data$snp.matrix)
 
 e.coli.multi.baps <- multi_res_baps(e.coli.data, levels = 2, n.cores = 4)
@@ -126,7 +139,7 @@ h.inf.multi.flat <- multi_res_baps(h.inf.data, levels = 2, n.cores = 4)
 
 
 
-h.inf.hb <- fread("./data/haemophilus_influenzae/hierbaps_partition.csv", data.table = FALSE)
+h.inf.hb <- fread("./data/haemophilus_influenzae_core_gene_snps_hierbaps_partition.csv", data.table = FALSE)
 h.inf.hb <- h.inf.hb[match(h.inf.multi.baps$Isolates, h.inf.hb$Isolate),]
 h.inf.tree <- phytools::read.newick("./data/haemophilus_influenzae/haemophilus_influenzae_core_gene_snps.aln.fasttree")
 h.inf.tree <- phytools::midpoint.root(h.inf.tree)
@@ -154,7 +167,7 @@ listeria.multi.hc <- multi_res_baps(listeria.data, levels = 2, n.cores = 4)
 listeria.data <- optimise_prior(listeria.data, type = "flat", n.cores = 4)
 listeria.multi.flat <- multi_res_baps(listeria.data, levels = 2, n.cores = 4)
 
-listeria.hb <- fread("./data/listeria_monocytogenes/hierbaps_partition.csv", data.table = FALSE)
+listeria.hb <- fread("./data/listeria_monocytogenes_core_gene_snps_hierbaps_partition.csv", data.table = FALSE)
 listeria.hb$Isolate <- gsub("#", "_", listeria.hb$Isolate)
 listeria.hb <- listeria.hb[match(listeria.multi.hc$Isolates, listeria.hb$Isolate),]
 
@@ -185,23 +198,32 @@ n.meng.data <- optimise_prior(n.meng.data, type = "flat", n.cores = 4)
 n.meng.multi.flat <- multi_res_baps(n.meng.data, levels = 2, n.cores = 4)
 
 
-n.meng.hb <- fread("./data/neisseria_meningitidis/hierbaps_partition.csv", data.table = FALSE)
+n.meng.hb <- fread("./data/neisseria_meningitidis_core_gene_snps_hierbaps_partition.csv", data.table = FALSE)
 n.meng.hb <- n.meng.hb[match(n.meng.multi.baps$Isolates, n.meng.hb$Isolate),]
+
+n.meng.snap <- fread("./data/neisseria_meningitidis_core_gene_snps_snapclust_results.csv", 
+                    data.table = FALSE)
+n.meng.sum <- fread("./data/neisseria_meningitidis_core_gene_snps_snapclust_run_summary.csv", 
+                    data.table = FALSE)
+n.meng.snap.aic <- n.meng.snap[,n.meng.sum$K[which.min(n.meng.sum$AIC)]]
+names(n.meng.snap.aic) <- n.meng.snap$Isolate
+
 n.meng.tree <- phytools::read.newick("./data/neisseria_meningitidis/neisseria_meningitidis_core_gene_snps.aln.fasttree")
 n.meng.tree <- phytools::midpoint.root(n.meng.tree)
 n.meng.bbp.tree <- fastbaps::best_baps_partition(n.meng.data, n.meng.tree)
 
-plot_custom_ggtree(n.meng.tree, multi.baps = n.meng.multi.baps,
+plot_custom_ggtree_snap(n.meng.tree, multi.baps = n.meng.multi.baps,
                    multi.hc = n.meng.multi.hc,
                    multi.flat = n.meng.multi.flat,
-                   hb = n.meng.hb, bbp = n.meng.bbp.tree)
+                   hb = n.meng.hb, bbp = n.meng.bbp.tree,
+                   snap = n.meng.snap.aic)
 ```
 
 
 ##Staphylococcus Aureus 
 
 ```{r, cache=TRUE}
-  s.aus.data <- import_fasta_sparse_nt("./data/staphylococcus_aureus/staphylococcus_aureus_core_gene_alignment.snps.aln", prior = "baps")
+s.aus.data <- import_fasta_sparse_nt("./data/staphylococcus_aureus/staphylococcus_aureus_core_gene_alignment.snps.aln", prior = "baps")
 dim(s.aus.data$snp.matrix)
 
 s.aus.multi.baps <- multi_res_baps(s.aus.data, levels = 2, n.cores = 4)
@@ -214,16 +236,25 @@ s.aus.data <- optimise_prior(s.aus.data, type = "flat", n.cores = 4)
 
 s.aus.multi.flat <- multi_res_baps(s.aus.data, levels = 2, n.cores = 4)
 
-s.aus.hb <- fread("./data/staphylococcus_aureus/hierbaps_partition.csv", data.table = FALSE)
+s.aus.hb <- fread("./data/staphylococcus_aureus_core_gene_alignment.snps_hierbaps_partition.csv", data.table = FALSE)
 s.aus.hb <- s.aus.hb[match(s.aus.multi.baps$Isolates, s.aus.hb$Isolate),]
 s.aus.tree <- phytools::read.newick("./data/staphylococcus_aureus/staphylococcus_aureus_core_gene_alignment.snps.aln.fasttree")
+
+s.aus.snap <- fread("./data/staphylococcus_aureus_core_gene_alignment.snps_snapclust_results.csv", 
+                    data.table = FALSE)
+s.aus.sum <- fread("./data/staphylococcus_aureus_core_gene_alignment.snps_snapclust_run_summary.csv", 
+                    data.table = FALSE)
+s.aus.snap.aic <- s.aus.snap[,s.aus.sum$K[which.min(s.aus.sum$AIC)]]
+names(s.aus.snap.aic) <- s.aus.snap$Isolate
+
 s.aus.tree <- phytools::midpoint.root(s.aus.tree)
 s.aus.bbp.tree <- fastbaps::best_baps_partition(s.aus.data, s.aus.tree)
 
-plot_custom_ggtree(s.aus.tree, multi.baps = s.aus.multi.baps,
+plot_custom_ggtree_snap(s.aus.tree, multi.baps = s.aus.multi.baps,
                    multi.flat = s.aus.multi.flat,
                    multi.hc = s.aus.multi.hc,
-                   hb = s.aus.hb, bbp = s.aus.bbp.tree)
+                   hb = s.aus.hb, bbp = s.aus.bbp.tree,
+                   snap = s.aus.snap.aic)
 ```
 
 ##Ebola
@@ -242,15 +273,29 @@ ebola.data <- optimise_prior(ebola.data, type = "flat", n.cores = 4)
 
 ebola.multi.flat <- multi_res_baps(ebola.data, levels = 2, n.cores = 4)
 
+ebola.hb <- fread("./data/Makona_1610_cds_ig_hierbaps_partition.csv", data.table = FALSE)
+ebola.hb <- ebola.hb[match(ebola.multi.baps$Isolates, ebola.hb$Isolate),]
+
+ebola.snap <- fread("./data/Makona_1610_cds_ig_snapclust_results.csv", 
+                    data.table = FALSE)
+ebola.sum <- fread("./data/Makona_1610_cds_ig_snapclust_run_summary.csv", 
+                    data.table = FALSE)
+ebola.snap.aic <- ebola.snap[,ebola.sum$K[which.min(ebola.sum$AIC)]]
+names(ebola.snap.aic) <- ebola.snap$Isolate
+
+
 ebola.tree <- phytools::read.newick("./data/ebola/Makona_1610_cds_ig_iqtree_allnni.treefile")
 plot(ebola.tree, show.tip.label = FALSE)
 ebola.tree <- phytools::midpoint.root(ebola.tree)
 ebola.bbp.tree <- fastbaps::best_baps_partition(ebola.data, ebola.tree)
 
-plot_custom_ggtree_nohb(tree = ebola.tree, multi.baps = ebola.multi.baps,
-                        multi.hc = ebola.multi.hc,
-                        multi.flat = ebola.multi.flat,
-                        bbp = ebola.bbp.tree)
+
+plot_custom_ggtree_snap(tree = ebola.tree, hb = ebola.hb,
+                   multi.baps = ebola.multi.baps,
+                   multi.hc = ebola.multi.hc,
+                   multi.flat = ebola.multi.flat,
+                   bbp = ebola.bbp.tree,
+                   snap = ebola.snap.aic)
 ```
 
 ##HIV

@@ -1,5 +1,5 @@
 FILE="./data/escherichia_coli/escherichia_coli_core_gene_alignment.snps.aln"
-MAXK=30
+MAXK=50
 nohup /usr/bin/time -v Rscript --vanilla ./fastbaps_manuscript/run_snapclust.R $FILE $MAXK > "${FILE}.snapclust.log" 2>&1 &
 
 FILE="./data/haemophilus_influenzae/haemophilus_influenzae_core_gene_snps.aln"
@@ -17,4 +17,5 @@ nohup /usr/bin/time -v Rscript --vanilla ./fastbaps_manuscript/run_snapclust.R $
 FILE="./data/ebola/Makona_1610_cds_ig.fas"
 nohup /usr/bin/time -v Rscript --vanilla ./fastbaps_manuscript/run_snapclust.R $FILE $MAXK > "${FILE}.snapclust.log" 2>&1 &
 
-
+FILE="./data/maela/maela3k_snps.fasta"
+nohup /usr/bin/time -v Rscript --vanilla ./fastbaps_manuscript/run_snapclust.R $FILE $MAXK > "${FILE}.snapclust.log" 2>&1 &
