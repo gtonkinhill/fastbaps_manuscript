@@ -1,0 +1,11 @@
+nohup: ignoring input
+Loading required package: methods
+Loading required package: ade4
+
+   /// adegenet 2.1.2 is loaded ////////////
+
+   > overview: '?adegenet'
+   > tutorials/doc/questions: 'adegenetWeb()' 
+   > bug reports/feature requests: adegenetIssues()
+
+

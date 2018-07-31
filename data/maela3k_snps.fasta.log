@@ -1,0 +1,7 @@
+nohup: ignoring input
+Warning message:
+In load_fasta(fasta.file.name) :
+  Characters not in acgtnACGTN- will be treated as missing (-)...
+[1] "---- Current depth: 0 ----"
+[1] "Current depth: 0 Cluster ID: 1"
+ Round: 0/480 Type: none Log marginal likelihood: -95372959.2855477
