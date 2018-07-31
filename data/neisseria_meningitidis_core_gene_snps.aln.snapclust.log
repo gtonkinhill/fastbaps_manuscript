@@ -9,24 +9,24 @@ Loading required package: ade4
    > bug reports/feature requests: adegenetIssues()
 
 
-	Command being timed: "Rscript --vanilla ./fastbaps_manuscript/run_snapclust.R ./data/neisseria_meningitidis/neisseria_meningitidis_core_gene_snps.aln 30"
-	User time (seconds): 35374.42
-	System time (seconds): 704.31
-	Percent of CPU this job got: 361%
-	Elapsed (wall clock) time (h:mm:ss or m:ss): 2:46:25
+	Command being timed: "Rscript --vanilla ./fastbaps_manuscript/run_snapclust.R ./data/neisseria_meningitidis/neisseria_meningitidis_core_gene_snps.aln 50"
+	User time (seconds): 75255.72
+	System time (seconds): 1106.03
+	Percent of CPU this job got: 365%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 5:48:06
 	Average shared text size (kbytes): 0
 	Average unshared data size (kbytes): 0
 	Average stack size (kbytes): 0
 	Average total size (kbytes): 0
-	Maximum resident set size (kbytes): 13639688
+	Maximum resident set size (kbytes): 13779108
 	Average resident set size (kbytes): 0
 	Major (requiring I/O) page faults: 0
-	Minor (reclaiming a frame) page faults: 484884904
-	Voluntary context switches: 11664
-	Involuntary context switches: 26993
+	Minor (reclaiming a frame) page faults: 854530511
+	Voluntary context switches: 24412
+	Involuntary context switches: 43178
 	Swaps: 0
 	File system inputs: 0
-	File system outputs: 136
+	File system outputs: 224
 	Socket messages sent: 0
 	Socket messages received: 0
 	Signals delivered: 0
