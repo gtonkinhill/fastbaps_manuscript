@@ -93,12 +93,6 @@ plot_custom_ggtree_snap <- function(tree, multi.baps, multi.hc, multi.flat, hb, 
 ##Escherichia Coli
 
 ```{r, cache=TRUE}
-system.time({
-e.coli.data <- import_fasta_sparse_nt("./data/escherichia_coli/escherichia_coli_core_gene_alignment.snps.aln", prior = "baps")
-e.coli.data <- optimise_prior(e.coli.data, type = "flat", n.cores = 4)
-e.coli.multi.flat <- multi_res_baps(e.coli.data, levels = 2, n.cores = 4)
-})
-
 e.coli.data <- import_fasta_sparse_nt("./data/escherichia_coli/escherichia_coli_core_gene_alignment.snps.aln", prior = "baps")
 
 dim(e.coli.data$snp.matrix)
@@ -108,19 +102,28 @@ e.coli.multi.baps <- multi_res_baps(e.coli.data, levels = 2, n.cores = 4)
 e.coli.data <- optimise_prior(e.coli.data, type = "hc", n.cores = 4)
 e.coli.multi.hc <- multi_res_baps(e.coli.data, levels = 2, n.cores = 4)
 
-e.coli.data <- optimise_prior(e.coli.data, type = "flat", n.cores = 4)
+e.coli.data <- optimise_prior(e.coli.data, type = "optimise.baps", n.cores = 4)
 e.coli.multi.flat <- multi_res_baps(e.coli.data, levels = 2, n.cores = 4)
 
 e.coli.hb <- fread("./data/escherichia_coli/hierbaps_partition.csv", data.table = FALSE)
 e.coli.hb <- e.coli.hb[match(e.coli.multi.baps$Isolates, e.coli.hb$Isolate),]
+
+e.coli.snap <- fread("./data/escherichia_coli_core_gene_alignment.snps_snapclust_results.csv", 
+                    data.table = FALSE)
+e.coli.sum <- fread("./data/escherichia_coli_core_gene_alignment.snps_snapclust_run_summary.csv", 
+                    data.table = FALSE)
+e.coli.snap.aic <- e.coli.snap[,e.coli.sum$K[which.min(e.coli.sum$AIC)]]
+names(e.coli.snap.aic) <- e.coli.snap$Isolate
+
 e.coli.tree <- phytools::read.newick("./data/escherichia_coli/escherichia_coli_core_gene_alignment.snps.aln.fasttree")
 e.coli.tree <- phytools::midpoint.root(e.coli.tree)
 e.coli.bbp.tree <- fastbaps::best_baps_partition(e.coli.data, e.coli.tree)
 
-plot_custom_ggtree(tree = e.coli.tree, multi.baps = e.coli.multi.baps,
+plot_custom_ggtree_snap(tree = e.coli.tree, multi.baps = e.coli.multi.baps,
                    multi.hc = e.coli.multi.hc,
                    multi.flat = e.coli.multi.flat,
-                   hb = e.coli.hb, bbp = e.coli.bbp.tree)
+                   hb = e.coli.hb, bbp = e.coli.bbp.tree,
+                   snap = e.coli.snap.aic)
 ```
 
 ##Haemophilus Influenzae
@@ -138,8 +141,8 @@ h.inf.multi.baps <- multi_res_baps(h.inf.data, levels = 2, n.cores = 4)
 h.inf.data <- optimise_prior(h.inf.data, type = "hc", n.cores = 4)
 h.inf.multi.hc <- multi_res_baps(h.inf.data, levels = 2, n.cores = 4)
 
-h.inf.data <- optimise_prior(h.inf.data, type = "flat", n.cores = 4)
-h.inf.multi.flat <- multi_res_baps(h.inf.data, levels = 2, n.cores = 4, k.init = 10) 
+h.inf.data <- optimise_prior(h.inf.data, type = "optimise.baps", n.cores = 4)
+h.inf.multi.flat <- multi_res_baps(h.inf.data, levels = 2, n.cores = 4)
 
 h.inf.hb <- fread("./data/haemophilus_influenzae_core_gene_snps_hierbaps_partition.csv", data.table = FALSE)
 h.inf.hb <- h.inf.hb[match(h.inf.multi.baps$Isolates, h.inf.hb$Isolate),]
@@ -175,21 +178,30 @@ listeria.multi.baps <- multi_res_baps(listeria.data, levels = 2, n.cores = 4)
 listeria.data <- optimise_prior(listeria.data, type = "hc", n.cores = 4)
 listeria.multi.hc <- multi_res_baps(listeria.data, levels = 2, n.cores = 4)
 
-listeria.data <- optimise_prior(listeria.data, type = "flat", n.cores = 4)
+listeria.data <- optimise_prior(listeria.data, type = "optimise.baps", n.cores = 4)
 listeria.multi.flat <- multi_res_baps(listeria.data, levels = 2, n.cores = 4)
 
 listeria.hb <- fread("./data/listeria_monocytogenes_core_gene_snps_hierbaps_partition.csv", data.table = FALSE)
 listeria.hb$Isolate <- gsub("#", "_", listeria.hb$Isolate)
 listeria.hb <- listeria.hb[match(listeria.multi.hc$Isolates, listeria.hb$Isolate),]
 
+listeria.snap <- fread("./data/listeria_monocytogenes_core_gene_snps_snapclust_results.csv", 
+                    data.table = FALSE)
+listeria.snap$Isolate <- gsub("#", "_", listeria.snap$Isolate)
+listeria.sum <- fread("./data/listeria_monocytogenes_core_gene_snps_snapclust_run_summary.csv", 
+                    data.table = FALSE)
+listeria.snap.aic <- listeria.snap[,listeria.sum$K[which.min(listeria.sum$AIC)]]
+names(listeria.snap.aic) <- listeria.snap$Isolate
+
 listeria.tree <- ape::read.tree("./data/listeria_monocytogenes/listeria_monocytogenes_core_gene_snps.aln.treefile")
 listeria.tree <- phytools::midpoint.root(listeria.tree)
 listeria.bbp.tree <- fastbaps::best_baps_partition(listeria.data, listeria.tree)
 
-plot_custom_ggtree(tree = listeria.tree, multi.baps = listeria.multi.baps,
+plot_custom_ggtree_snap(tree = listeria.tree, multi.baps = listeria.multi.baps,
                    multi.hc = listeria.multi.hc,
                    multi.flat = listeria.multi.flat,
-                   hb = listeria.hb, bbp = listeria.bbp.tree)
+                   hb = listeria.hb, bbp = listeria.bbp.tree,
+                   snap = listeria.snap.aic)
 ```
 
 ##Neisseria Meningitidis
@@ -204,7 +216,7 @@ n.meng.data <- optimise_prior(n.meng.data, type = "hc", n.cores = 4)
 
 n.meng.multi.hc <- multi_res_baps(n.meng.data, levels = 2, n.cores = 4)
 
-n.meng.data <- optimise_prior(n.meng.data, type = "flat", n.cores = 4)
+n.meng.data <- optimise_prior(n.meng.data, type = "optimise.baps", n.cores = 4)
 
 n.meng.multi.flat <- multi_res_baps(n.meng.data, levels = 2, n.cores = 4)
 
@@ -243,7 +255,7 @@ s.aus.data <- optimise_prior(s.aus.data, type = "hc", n.cores=4)
 
 s.aus.multi.hc <- multi_res_baps(s.aus.data, levels = 2, n.cores = 4)
 
-s.aus.data <- optimise_prior(s.aus.data, type = "flat", n.cores = 4)
+s.aus.data <- optimise_prior(s.aus.data, type = "optimise.baps", n.cores = 4)
 
 s.aus.multi.flat <- multi_res_baps(s.aus.data, levels = 2, n.cores = 4)
 
@@ -280,7 +292,7 @@ ebola.data <- optimise_prior(ebola.data, type = "hc", n.cores = 4)
 
 ebola.multi.hc <- multi_res_baps(ebola.data, levels = 2, n.cores = 4)
 
-ebola.data <- optimise_prior(ebola.data, type = "flat", n.cores = 4)
+ebola.data <- optimise_prior(ebola.data, type = "optimise.baps", n.cores = 4)
 
 ebola.multi.flat <- multi_res_baps(ebola.data, levels = 2, n.cores = 4)
 
