@@ -34,7 +34,7 @@ library(ggplot2)
 library(rhierbaps)
 library(starmie)
 
-STRUCTURE_BINARY <- "/home/gerryt/software/structure"
+STRUCTURE_BINARY <- "/home/gerryt/software/structure/structure"
 CPU <- 15
 ```
 
