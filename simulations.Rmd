@@ -33,13 +33,16 @@ library(data.table)
 library(ggplot2)
 library(rhierbaps)
 library(starmie)
+
+STRUCTURE_BINARY <- "/home/gerryt/software/structure"
+CPU <- 15
 ```
 
 Simulators available
 
 ```{r}
-activate_msms(download = TRUE)
-activate_seqgen("/Users/gt4/software/Seq-Gen.v1.3.3/source/seq-gen")
+# activate_msms(download = TRUE)
+# activate_seqgen("/Users/gt4/software/Seq-Gen.v1.3.3/source/seq-gen")
 activate_scrm(priority = 600)
 list_simulators()
 ```
@@ -219,19 +222,19 @@ write_struct_input <- function(sparse.data, out.file.name){
    
 }
 
-calc_cluster_structure <- function(sparse.data, prefix, directory){
+calc_cluster_structure <- function(sparse.data, prefix, directory, K){
   
   out.prefix <- paste(c(directory, prefix, "_structure_"), collapse="")
   
   out.file.name <- paste(out.prefix, "struct_input.str", sep="_")
   write_struct_input(sparse.data, out.file.name)
 
-  run_structure_adapt(path_to_structure = "~/software/structure_v2.3.4/structure",
+  run_structure_adapt(path_to_structure = STRUCTURE_BINARY,
               input_file = out.file.name,
               out_prefix = out.prefix,
               main_params = "./simulations/island/structure/mainparams",
               extra_params = "./simulations/island/structure/extraparams",
-              n_K =  5, n_replicates = 1, n_loci = nrow(sparse.data$snp.matrix),
+              n_K =  K, n_replicates = 1, n_loci = nrow(sparse.data$snp.matrix),
               n_inds = ncol(sparse.data$snp.matrix), n_cores = 1)
   
   out.files <- Sys.glob(paste(out.prefix, "*.out_f", sep=""))
@@ -273,7 +276,7 @@ n.pops <- c(5,10, 15, 20, 25)
 pop.size <- 1000
 seq.length <- 1e5
 
-mutation.rates <- c(0.01)
+mutation.rates <- c(0.001, 0.01)
 recombination.rates <- c(0, 1, 10)
 migration.rates <- c(0.001, 0.01, 0.1, 1)
 
@@ -325,7 +328,8 @@ results.df <- do.call(rbind, mclapply(1:nrow(parameters.df), function(i){
   #structure
   structure.results <- calc_cluster_structure(temp.simulation$simu.sparse.data,
                                               prefix = id,
-                                              directory = "./simulations/island/structure/")
+                                              directory = "./simulations/island/structure/",
+                                              params$n.pop)
   structure.results.df <- data.frame(method="structure",
                                      clusteval::comembership_table(structure.results, temp.simulation$simu.clusters),
                                      fowlkes.mallows = fowlkes_mallows(structure.results, temp.simulation$simu.clusters))
@@ -339,7 +343,7 @@ results.df <- do.call(rbind, mclapply(1:nrow(parameters.df), function(i){
   
   return(temp.results.df)
   
-},  mc.cores = 2))
+},  mc.cores = CPU))
 
 write.table(results.and.params.df, file="./simulations/simulation_results_island.csv",
             row.names = FALSE, col.names = TRUE, quote=FALSE, sep=",")
@@ -371,7 +375,7 @@ dim(parameters.df)
 results.df <- do.call(rbind, mclapply(1:nrow(parameters.df), function(i){
   print(i)
   params <- parameters.df[i,,drop=FALSE]
-  id <-  paste(paste(colnames(params), params[1,], sep = ""), collapse = "_")
+  id <-  paste("large_mu", paste(paste(colnames(params), params[1,], sep = ""), collapse = "_"), sep="_")
   temp.simulation <- simulate_island_inputs(params$n.pop, pop.size, seq.length,
                                             params$mutation.rate, params$recombination.rate, params$migration.rate,
                                             sample.proportion, 
@@ -412,7 +416,7 @@ results.df <- do.call(rbind, mclapply(1:nrow(parameters.df), function(i){
   
   return(temp.results.df)
   
-},  mc.cores = 2))
+},  mc.cores = CPU))
 
 write.table(results.and.params.nostruct.df, file="./simulations/simulation_results_island_no_structure.csv",
             row.names = FALSE, col.names = TRUE, quote=FALSE, sep=",")
