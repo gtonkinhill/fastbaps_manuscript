@@ -103,23 +103,26 @@ simulate_island_inputs <- function(n.pops, pop.size, seq.length,
   
   population.sizes <- rep(pop.size, n.pops)
   
-  model <- coala::coal_model(sample_size = population.sizes, loci_number = 1, loci_length = seq.length) +
-    feat_mutation(mutation.rate) +
-    feat_recombination(recombination.rate) +
-    feat_migration(rate = migration.rate, symmetric = TRUE) +
-    sumstat_seg_sites("segsites")
-  
-  simu.stats <- simulate(model)
-  
-  simu <- make_AG(simu.stats, population.sizes, sample.proportion)
+  # model <- coala::coal_model(sample_size = population.sizes, loci_number = 1, loci_length = seq.length) +
+  #   feat_mutation(mutation.rate) +
+  #   feat_recombination(recombination.rate) +
+  #   feat_migration(rate = migration.rate, symmetric = TRUE) +
+  #   sumstat_seg_sites("segsites")
+  # 
+  # simu.stats <- simulate(model)
+  # 
+  # simu <- make_AG(simu.stats, population.sizes, sample.proportion)
   
   fasta.file.name <- paste(c(directory, "/simulation_", sim.id, ".fasta"), collapse = "")
   
-  ape::write.FASTA(simu$aln, file = fasta.file.name)
+  # ape::write.FASTA(simu$aln, file = fasta.file.name)
   
   sparse.data <- fastbaps::import_fasta_sparse_nt(fasta.file.name)
   
-  simu.gene.id <- DNAbin2genind(simu$aln)
+  # simu.gene.id <- DNAbin2genind(simu$aln)
+  fasta <- ape::read.FASTA(fasta.file.name)
+  simu <- list(pops=as.numeric(gsub(".*_pop", "", names(fasta))))
+  simu.gene.id <- DNAbin2genind(fasta)
   
   return(list(simu.clusters=simu$pops,
          simu.gene.id=simu.gene.id,
@@ -229,13 +232,13 @@ calc_cluster_structure <- function(sparse.data, prefix, directory, K){
   out.file.name <- paste(out.prefix, "struct_input.str", sep="_")
   write_struct_input(sparse.data, out.file.name)
 
-  run_structure_adapt(path_to_structure = STRUCTURE_BINARY,
-              input_file = out.file.name,
-              out_prefix = out.prefix,
-              main_params = "./simulations/island/structure/mainparams",
-              extra_params = "./simulations/island/structure/extraparams",
-              n_K =  K, n_replicates = 1, n_loci = nrow(sparse.data$snp.matrix),
-              n_inds = ncol(sparse.data$snp.matrix), n_cores = 1)
+  # run_structure_adapt(path_to_structure = STRUCTURE_BINARY,
+  #             input_file = out.file.name,
+  #             out_prefix = out.prefix,
+  #             main_params = "./simulations/island/structure/mainparams",
+  #             extra_params = "./simulations/island/structure/extraparams",
+  #             n_K =  K, n_replicates = 1, n_loci = nrow(sparse.data$snp.matrix),
+  #             n_inds = ncol(sparse.data$snp.matrix), n_cores = 1)
   
   out.files <- Sys.glob(paste(out.prefix, "*.out_f", sep=""))
   log.files <- Sys.glob(paste(out.prefix, "*.log", sep=""))
@@ -345,7 +348,7 @@ results.df <- do.call(rbind, mclapply(1:nrow(parameters.df), function(i){
   
 },  mc.cores = CPU))
 
-write.table(results.and.params.df, file="./simulations/simulation_results_island.csv",
+write.table(results.df, file="./simulations/simulation_results_island.csv",
             row.names = FALSE, col.names = TRUE, quote=FALSE, sep=",")
 ```
 
@@ -418,7 +421,7 @@ results.df <- do.call(rbind, mclapply(1:nrow(parameters.df), function(i){
   
 },  mc.cores = CPU))
 
-write.table(results.and.params.nostruct.df, file="./simulations/simulation_results_island_no_structure.csv",
+write.table(results.df, file="./simulations/simulation_results_island_no_structure.csv",
             row.names = FALSE, col.names = TRUE, quote=FALSE, sep=",")
 ```
 
