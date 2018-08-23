@@ -103,23 +103,23 @@ simulate_island_inputs <- function(n.pops, pop.size, seq.length,
   
   population.sizes <- rep(pop.size, n.pops)
   
-  # model <- coala::coal_model(sample_size = population.sizes, loci_number = 1, loci_length = seq.length) +
-  #   feat_mutation(mutation.rate) +
-  #   feat_recombination(recombination.rate) +
-  #   feat_migration(rate = migration.rate, symmetric = TRUE) +
-  #   sumstat_seg_sites("segsites")
-  # 
-  # simu.stats <- simulate(model)
-  # 
-  # simu <- make_AG(simu.stats, population.sizes, sample.proportion)
+  model <- coala::coal_model(sample_size = population.sizes, loci_number = 1, loci_length = seq.length) +
+    feat_mutation(mutation.rate) +
+    feat_recombination(recombination.rate) +
+    feat_migration(rate = migration.rate, symmetric = TRUE) +
+    sumstat_seg_sites("segsites")
+
+  simu.stats <- simulate(model)
+
+  simu <- make_AG(simu.stats, population.sizes, sample.proportion)
   
   fasta.file.name <- paste(c(directory, "/simulation_", sim.id, ".fasta"), collapse = "")
   
-  # ape::write.FASTA(simu$aln, file = fasta.file.name)
+  ape::write.FASTA(simu$aln, file = fasta.file.name)
   
   sparse.data <- fastbaps::import_fasta_sparse_nt(fasta.file.name)
   
-  # simu.gene.id <- DNAbin2genind(simu$aln)
+  simu.gene.id <- DNAbin2genind(simu$aln)
   fasta <- ape::read.FASTA(fasta.file.name)
   simu <- list(pops=as.numeric(gsub(".*_pop", "", names(fasta))))
   simu.gene.id <- DNAbin2genind(fasta)
@@ -176,10 +176,10 @@ calc_cluster_hierbaps <- function(gene.id){
 run_structure_adapt <- function (path_to_structure, input_file, main_params, extra_params, 
     out_prefix, n_K, n_replicates, n_loci, n_inds, n_cores) 
 {
-    stopifnot(file.exists(path_to_structure))
-    stopifnot(file.exists(input_file))
-    stopifnot(file.exists(main_params))
-    stopifnot(file.exists(extra_params))
+    # stopifnot(file.exists(path_to_structure))
+    # stopifnot(file.exists(input_file))
+    # stopifnot(file.exists(main_params))
+    # stopifnot(file.exists(extra_params))
     if (!is.integer(n_K) & n_K < 1) {
         stop("Assumed populations must be greater than 1")
     }
@@ -202,7 +202,7 @@ run_structure_adapt <- function (path_to_structure, input_file, main_params, ext
                      "-L", n_loci, "-N", n_inds,
                      "-m", main_params, "-e", extra_params, "-D", seed, 
                      "-o", out_file, "&>", log_file)
-        system(cmd)
+        # system(cmd)
         return(cmd)
     }
     message(paste("Running STRUCTURE on", n_cores, "core with", 
@@ -210,6 +210,7 @@ run_structure_adapt <- function (path_to_structure, input_file, main_params, ext
     cmds_run <- parallel::mcmapply(run_structure_single, out_files, 
         log_files, mc.cores = n_cores, mc.set.seed = TRUE)
     message(paste("Commands run\n", paste(cmds_run, collapse = "\n")))
+    return(cmds_run)
 }
 
 write_struct_input <- function(sparse.data, out.file.name){
@@ -229,39 +230,38 @@ calc_cluster_structure <- function(sparse.data, prefix, directory, K){
   
   out.prefix <- paste(c(directory, prefix, "_structure_"), collapse="")
   
-  out.file.name <- paste(out.prefix, "struct_input.str", sep="_")
+  out.file.name <- paste(prefix, "struct_input.str", sep="_")
   write_struct_input(sparse.data, out.file.name)
 
-  # run_structure_adapt(path_to_structure = STRUCTURE_BINARY,
-  #             input_file = out.file.name,
-  #             out_prefix = out.prefix,
-  #             main_params = "./simulations/island/structure/mainparams",
-  #             extra_params = "./simulations/island/structure/extraparams",
-  #             n_K =  K, n_replicates = 1, n_loci = nrow(sparse.data$snp.matrix),
-  #             n_inds = ncol(sparse.data$snp.matrix), n_cores = 1)
+  cmds <- run_structure_adapt(path_to_structure = STRUCTURE_BINARY,
+              input_file = out.file.name,
+              out_prefix = prefix,
+              main_params = "mainparams",
+              extra_params = "extraparams",
+              n_K =  K, n_replicates = 1, n_loci = nrow(sparse.data$snp.matrix),
+              n_inds = ncol(sparse.data$snp.matrix), n_cores = 1)
   
-  out.files <- Sys.glob(paste(out.prefix, "*.out_f", sep=""))
-  log.files <- Sys.glob(paste(out.prefix, "*.log", sep=""))
+  sink(paste(c("./simulations/island/structure/",prefix,"_struct_cmd.sh"), collapse = ""))
+  cat(paste(cmds, collapse="\n"))
+  sink()
   
-  struct.results <- starmie::structList(mapply(starmie::loadStructure, out.files, log.files, SIMPLIFY = FALSE))
+  # out.files <- Sys.glob(paste(out.prefix, "*.out_f", sep=""))
+  # log.files <- Sys.glob(paste(out.prefix, "*.log", sep=""))
+  # 
+  # struct.results <- starmie::structList(mapply(starmie::loadStructure, out.files, log.files, SIMPLIFY = FALSE))
   
-  # evanno.results <- starmie::bestK(struct.results, method="structure")
-  # evanno.results <- evanno.results[evanno.results$variable == 'AIC',]
-  # best.K <- evanno.results$K[which.min(evanno.results$value)]
-  # struct.best.K <- struct.results[unlist(lapply(struct.results, getK))==best.K]
+  # struct.best.K <- struct.results[which.max(unlist(lapply(struct.results, function(x) {
+  #   r <- starmie::getFitStats(x)
+  #   return(r[[1]])
+  # })))][[1]]
+  # 
+  # cluster <- apply(data.matrix(
+  #   struct.best.K$ancest_df[,3:ncol(struct.best.K$ancest_df)]), 1,
+  #   function(r){
+  #     c(1:struct.best.K$K)[which.max(r)]
+  #   })
   
-  struct.best.K <- struct.results[which.max(unlist(lapply(struct.results, function(x) {
-    r <- starmie::getFitStats(x)
-    return(r[[1]])
-  })))][[1]]
-  
-  cluster <- apply(data.matrix(
-    struct.best.K$ancest_df[,3:ncol(struct.best.K$ancest_df)]), 1,
-    function(r){
-      c(1:struct.best.K$K)[which.max(r)]
-    })
-  
-  return(cluster)
+  return(cmds)
 }
 
 
@@ -279,7 +279,7 @@ n.pops <- c(5,10, 15, 20, 25)
 pop.size <- 1000
 seq.length <- 1e5
 
-mutation.rates <- c(0.001, 0.01)
+mutation.rates <- c(0.01)
 recombination.rates <- c(0, 1, 10)
 migration.rates <- c(0.001, 0.01, 0.1, 1)
 
@@ -292,7 +292,7 @@ parameters.df <- do.call(rbind, lapply(1:n.replicates, function(r){
 colnames(parameters.df) <- c("replicate", "n.pop", "mutation.rate", "recombination.rate", "migration.rate")
 dim(parameters.df)
 
-results.df <- do.call(rbind, mclapply(1:nrow(parameters.df), function(i){
+results.df <- mclapply(1:nrow(parameters.df), function(i){
   print(i)
   params <- parameters.df[i,,drop=FALSE]
   id <-  paste(paste(colnames(params), params[1,], sep = ""), collapse = "_")
@@ -333,27 +333,27 @@ results.df <- do.call(rbind, mclapply(1:nrow(parameters.df), function(i){
                                               prefix = id,
                                               directory = "./simulations/island/structure/",
                                               params$n.pop)
-  structure.results.df <- data.frame(method="structure",
-                                     clusteval::comembership_table(structure.results, temp.simulation$simu.clusters),
-                                     fowlkes.mallows = fowlkes_mallows(structure.results, temp.simulation$simu.clusters))
+  # structure.results.df <- data.frame(method="structure",
+  #                                    clusteval::comembership_table(structure.results, temp.simulation$simu.clusters),
+  #                                    fowlkes.mallows = fowlkes_mallows(structure.results, temp.simulation$simu.clusters))
   
   temp.results.df <- rbind(fastbaps.results.df,
-                           snapclust.results.df,
-                           rhierbaps.results.df,
-                           structure.results.df)
+                           snapclust.results.df
+                           ,rhierbaps.results.df
+                           # ,structure.results.df
+                           )
   temp.results.df<- cbind(do.call(rbind, rep(list(params), nrow(temp.results.df))),
                           temp.results.df)
   
   return(temp.results.df)
   
-},  mc.cores = CPU))
+},  mc.cores = CPU)
 
+results.df <- do.call(rbind, results.df)
 write.table(results.df, file="./simulations/simulation_results_island.csv",
             row.names = FALSE, col.names = TRUE, quote=FALSE, sep=",")
 ```
 
-
-To compare with structure we keep the mutation rate low to ensure the resulting alignment is not too large.
 
 ```{r}
 n.replicates <- 3
@@ -375,7 +375,7 @@ parameters.df <- do.call(rbind, lapply(1:n.replicates, function(r){
 colnames(parameters.df) <- c("replicate", "n.pop", "mutation.rate", "recombination.rate", "migration.rate")
 dim(parameters.df)
 
-results.df <- do.call(rbind, mclapply(1:nrow(parameters.df), function(i){
+results2.df <- do.call(rbind, mclapply(1:nrow(parameters.df), function(i){
   print(i)
   params <- parameters.df[i,,drop=FALSE]
   id <-  paste("large_mu", paste(paste(colnames(params), params[1,], sep = ""), collapse = "_"), sep="_")
@@ -421,7 +421,7 @@ results.df <- do.call(rbind, mclapply(1:nrow(parameters.df), function(i){
   
 },  mc.cores = CPU))
 
-write.table(results.df, file="./simulations/simulation_results_island_no_structure.csv",
+write.table(results2.df, file="./simulations/simulation_results_island_no_structure.csv",
             row.names = FALSE, col.names = TRUE, quote=FALSE, sep=",")
 ```
 
