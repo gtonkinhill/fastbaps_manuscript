@@ -110,6 +110,10 @@ simulate_island_inputs <- function(n.pops, pop.size, seq.length,
     sumstat_seg_sites("segsites")
 
   simu.stats <- simulate(model)
+  
+  while(ncol(simu.stats$segsites[[1]]$snps)<2){
+    simu.stats <- simulate(model)
+  }
 
   simu <- make_AG(simu.stats, population.sizes, sample.proportion)
   
@@ -279,7 +283,7 @@ n.pops <- c(5,10, 15, 20, 25)
 pop.size <- 1000
 seq.length <- 1e5
 
-mutation.rates <- c(0.01)
+mutation.rates <- c(0.0001, 0.001, 0.01)
 recombination.rates <- c(0, 1, 10)
 migration.rates <- c(0.001, 0.01, 0.1, 1)
 
@@ -356,73 +360,73 @@ write.table(results.df, file="./simulations/simulation_results_island.csv",
 
 
 ```{r}
-n.replicates <- 3
-
-n.pops <- c(5,10, 15, 20, 25)
-pop.size <- 1000
-seq.length <- 1e5
-
-mutation.rates <- c(0.1, 1)
-recombination.rates <- c(0, 1, 10)
-migration.rates <- c(0.001, 0.01, 0.1, 1)
-
-sample.proportion <- 0.05
-
-parameters.df <- expand.grid(n.pops, mutation.rates, recombination.rates, migration.rates)
-parameters.df <- do.call(rbind, lapply(1:n.replicates, function(r){
-  cbind(rep(r, nrow(parameters.df)), parameters.df)
-}))
-colnames(parameters.df) <- c("replicate", "n.pop", "mutation.rate", "recombination.rate", "migration.rate")
-dim(parameters.df)
-
-results2.df <- do.call(rbind, mclapply(1:nrow(parameters.df), function(i){
-  print(i)
-  params <- parameters.df[i,,drop=FALSE]
-  id <-  paste("large_mu", paste(paste(colnames(params), params[1,], sep = ""), collapse = "_"), sep="_")
-  temp.simulation <- simulate_island_inputs(params$n.pop, pop.size, seq.length,
-                                            params$mutation.rate, params$recombination.rate, params$migration.rate,
-                                            sample.proportion, 
-                                            sim.id = id, 
-                                            directory = "./simulations/island/")
-  #fastbaps
-  fastbaps.results <- calc_clusters_fastbaps(temp.simulation$simu.sparse.data)
-  fastbaps.results.df <- do.call(rbind, lapply(1:length(fastbaps.results), function(clust){
-    return(data.frame(method=names(fastbaps.results)[[clust]],
-                      clusteval::comembership_table(fastbaps.results[[clust]], temp.simulation$simu.clusters),
-               fowlkes.mallows = fowlkes_mallows(fastbaps.results[[clust]], temp.simulation$simu.clusters)))
-    
-  }))
-  
-  #snapclust
-  snapclust.results <- calc_cluster_snapclust(temp.simulation$simu.gene.id)
-  snapclust.results.df <- do.call(rbind, lapply(1:length(snapclust.results), function(clust){
-    return(data.frame(method=names(snapclust.results)[[clust]],
-                      clusteval::comembership_table(snapclust.results[[clust]], temp.simulation$simu.clusters),
-               fowlkes.mallows = fowlkes_mallows(snapclust.results[[clust]], temp.simulation$simu.clusters)))
-    
-  }))
-  
-  #hierBAPs
-  rhierbaps.results <- calc_cluster_hierbaps(temp.simulation$simu.gene.id)
-  rhierbaps.results.df <- do.call(rbind, lapply(1:length(rhierbaps.results), function(clust){
-    return(data.frame(method=names(rhierbaps.results)[[clust]],
-                      clusteval::comembership_table(rhierbaps.results[[clust]], temp.simulation$simu.clusters),
-               fowlkes.mallows = fowlkes_mallows(rhierbaps.results[[clust]], temp.simulation$simu.clusters)))
-    
-  }))
-  
-  temp.results.df <- rbind(fastbaps.results.df,
-                           snapclust.results.df,
-                           rhierbaps.results.df)
-  temp.results.df<- cbind(do.call(rbind, rep(list(params), nrow(temp.results.df))),
-                          temp.results.df)
-  
-  return(temp.results.df)
-  
-},  mc.cores = CPU))
-
-write.table(results2.df, file="./simulations/simulation_results_island_no_structure.csv",
-            row.names = FALSE, col.names = TRUE, quote=FALSE, sep=",")
+# n.replicates <- 3
+# 
+# n.pops <- c(5,10, 15, 20, 25)
+# pop.size <- 1000
+# seq.length <- 1e5
+# 
+# mutation.rates <- c(0.1, 1)
+# recombination.rates <- c(0, 1, 10)
+# migration.rates <- c(0.001, 0.01, 0.1, 1)
+# 
+# sample.proportion <- 0.05
+# 
+# parameters.df <- expand.grid(n.pops, mutation.rates, recombination.rates, migration.rates)
+# parameters.df <- do.call(rbind, lapply(1:n.replicates, function(r){
+#   cbind(rep(r, nrow(parameters.df)), parameters.df)
+# }))
+# colnames(parameters.df) <- c("replicate", "n.pop", "mutation.rate", "recombination.rate", "migration.rate")
+# dim(parameters.df)
+# 
+# results2.df <- do.call(rbind, mclapply(1:nrow(parameters.df), function(i){
+#   print(i)
+#   params <- parameters.df[i,,drop=FALSE]
+#   id <-  paste("large_mu", paste(paste(colnames(params), params[1,], sep = ""), collapse = "_"), sep="_")
+#   temp.simulation <- simulate_island_inputs(params$n.pop, pop.size, seq.length,
+#                                             params$mutation.rate, params$recombination.rate, params$migration.rate,
+#                                             sample.proportion, 
+#                                             sim.id = id, 
+#                                             directory = "./simulations/island/")
+#   #fastbaps
+#   fastbaps.results <- calc_clusters_fastbaps(temp.simulation$simu.sparse.data)
+#   fastbaps.results.df <- do.call(rbind, lapply(1:length(fastbaps.results), function(clust){
+#     return(data.frame(method=names(fastbaps.results)[[clust]],
+#                       clusteval::comembership_table(fastbaps.results[[clust]], temp.simulation$simu.clusters),
+#                fowlkes.mallows = fowlkes_mallows(fastbaps.results[[clust]], temp.simulation$simu.clusters)))
+#     
+#   }))
+#   
+#   #snapclust
+#   snapclust.results <- calc_cluster_snapclust(temp.simulation$simu.gene.id)
+#   snapclust.results.df <- do.call(rbind, lapply(1:length(snapclust.results), function(clust){
+#     return(data.frame(method=names(snapclust.results)[[clust]],
+#                       clusteval::comembership_table(snapclust.results[[clust]], temp.simulation$simu.clusters),
+#                fowlkes.mallows = fowlkes_mallows(snapclust.results[[clust]], temp.simulation$simu.clusters)))
+#     
+#   }))
+#   
+#   #hierBAPs
+#   rhierbaps.results <- calc_cluster_hierbaps(temp.simulation$simu.gene.id)
+#   rhierbaps.results.df <- do.call(rbind, lapply(1:length(rhierbaps.results), function(clust){
+#     return(data.frame(method=names(rhierbaps.results)[[clust]],
+#                       clusteval::comembership_table(rhierbaps.results[[clust]], temp.simulation$simu.clusters),
+#                fowlkes.mallows = fowlkes_mallows(rhierbaps.results[[clust]], temp.simulation$simu.clusters)))
+#     
+#   }))
+#   
+#   temp.results.df <- rbind(fastbaps.results.df,
+#                            snapclust.results.df,
+#                            rhierbaps.results.df)
+#   temp.results.df<- cbind(do.call(rbind, rep(list(params), nrow(temp.results.df))),
+#                           temp.results.df)
+#   
+#   return(temp.results.df)
+#   
+# },  mc.cores = CPU))
+# 
+# write.table(results2.df, file="./simulations/simulation_results_island_no_structure.csv",
+#             row.names = FALSE, col.names = TRUE, quote=FALSE, sep=",")
 ```
 
 plot some results
