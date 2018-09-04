@@ -16,17 +16,17 @@ snap.clust.aic <- unlist(parallel::mclapply(snap.clust.results, adegenet::AIC.sn
 
 cluster.results <- as.data.frame(do.call(cbind, lapply(snap.clust.results, function(x) x$group)))
 cluster.results <- cbind(rownames(cluster.results), cluster.results)
-colnames(cluster.results) <- c("Isolate", paste("K", 2:max.k, sep="_"))
+colnames(cluster.results) <- c("Isolate", paste("K", seq(20,400,20), sep="_"))
 
 write.table(cluster.results, file = paste(pre.name, "snapclust_results.csv", sep="_"),
             quote = FALSE, col.names = TRUE, row.names = FALSE)
 
-run.summaries <- data.frame(K = 2:max.k,
+run.summaries <- data.frame(K = seq(20,400,20),
            AIC = snap.clust.aic,
            BIC = snap.clust.bic,
            do.call(rbind, lapply(snap.clust.results, function(x) c(x$ll, x$n.param, x$converged, x$n.iter))),
            stringsAsFactors = FALSE)
 colnames(run.summaries)[4:7] <- c("log.lk", "n.param", "converged", "n.iter")
 
-write.table(run.summaries, file = paste(pre.name, "snapclust_run_summary.csv", sep="_"),
+write.table(run.summaries, file = paste(pre.name, "snapclust_run_hiv_summary.csv", sep="_"),
             quote = FALSE, col.names = TRUE, row.names = FALSE)
