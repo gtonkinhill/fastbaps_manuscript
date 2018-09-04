@@ -30,7 +30,8 @@ library(data.table)
 library(patchwork)
 library(stringr)
 library(dplyr)
-
+library(Matrix)
+library(ggbeeswarm)
 
 set.seed(1234)
 ```
@@ -323,72 +324,166 @@ plot_custom_ggtree_snap(tree = ebola.tree, hb = ebola.hb,
 
 ##HIV
 
+Load HIV data and remove outliers
+
 ```{r, cache=TRUE}
 hiv.data <- import_fasta_sparse_nt("./data/HIV/hiv_refs_prrt_trim.fas", prior = "baps")
-dim(hiv.data$snp.matrix)
+
+cs <- colSums(hiv.data$snp.matrix>0)
+hist(cs, breaks=100)
+sum(cs>200)
+
+hiv.data$snp.matrix <- hiv.data$snp.matrix[,cs<200]
 ```
 
 ```{r, eval=FALSE}
-system.time({hiv.multi <- multi_res_baps(hiv.data, levels = 2, n.cores = 4)})
-
-write.csv(hiv.multi, file="hiv_multi_baps_prior.csv", quote=FALSE)
-```
-
-```{r, eval=FALSE}
-hiv.data <- optimise_prior(hiv.data, type = "hc", n.cores = 4)
+system.time({hiv.data <- optimise_prior(hiv.data, type = "symmetric", n.cores = 4)})
 
 system.time({hiv.multi <- multi_res_baps(hiv.data, levels = 2, n.cores = 4, k.init = 11000)})
 
-write.csv(hiv.multi, file="hiv_multi_hc_prior.csv", quote=FALSE)
+write.csv(hiv.multi, file="hiv_multi_opt_symmetric_prior.csv", quote=FALSE)
+```
+
+```{r, eval=FALSE}
+system.time({hiv.data <- optimise_prior(hiv.data, type = "optimise.baps", n.cores = 4)})
+
+system.time({hiv.multi <- multi_res_baps(hiv.data, levels = 2, n.cores = 4, k.init = 11000)})
+
+write.csv(hiv.multi, file="hiv_multi_opt_baps_prior.csv", quote=FALSE)
 ```
 
 ```{r}
-hiv.multi.hc <- fread("./processed_data/hiv_multi_hc_prior.csv", data.table = FALSE)
+hiv.multi.opt.baps <- fread("./processed_data/hiv_multi_opt_baps_prior.csv", data.table = FALSE)
 
-hiv.multi.baps <- fread("./processed_data/hiv_multi_baps_prior.csv", data.table = FALSE)
-
-hiv.multi.flat <- fread("./processed_data/hiv_multi_flat_kinit11000_l5_prior.csv", data.table = FALSE)
-hiv.multi.flat$V1 <- NULL
-```
-
-
-```{r}
-combined.df <- stringr::str_split_fixed(hiv.multi.flat$Isolates, pattern = "\\|", n = 4)
-colnames(combined.df) <- c("Isolate", "Type", "Country", "Date")
-combined.df <- cbind(combined.df, hiv.multi.flat[,2:ncol(hiv.multi.flat)])
+hiv.multi.opt.symmetric <- fread("./processed_data/hiv_multi_opt_symmetric_prior.csv", data.table = FALSE)
 ```
 
 Choose a pretty silly outgroup as the earliest sample.
 
 ```{r, eval=FALSE}
-hiv.data <- import_fasta_sparse_nt("./data/HIV/hiv_refs_prrt_trim.fas", prior = "baps")
-min(as.numeric(combined.df$Date),na.rm = TRUE)
-combined.df[combined.df$Date=="1976",]
-
 hiv.tree <- phytools::read.newick("./data/HIV/hiv_refs_prrt_trim.fas.fasttree")
-hiv.tree <- ape::root(hiv.tree, outgroup = "U76035|A1GU|DEMREPOFCONGO|1976", resolve.root=TRUE)
-# hiv.bbp.tree <- fastbaps::best_baps_partition(hiv.data, hiv.tree)
+bad.tips <- hiv.tree$tip.label[!(hiv.tree$tip.label %in% hiv.multi.opt.baps$Isolates)]
+hiv.tree <- ape::drop.tip(hiv.tree, tip = bad.tips)
 
-# gg <- ggtree(hiv.tree)
-# f1 <- facet_plot(f1, panel="Level 1 - BAPS prior", data=hiv.multi.baps, geom=geom_tile, aes(x=`Level 1`), fill='#4daf4a')
-# f1 <- facet_plot(f1, panel="Level 2 - BAPS prior", data=hiv.multi.baps, geom=geom_tile, aes(x=`Level 2`), fill='#984ea3')
-# f1
+longest.edge <- hiv.tree$edge[order(-hiv.tree$edge.length)][1:100]
+long.nodes <- hiv.tree$edge[longest.edge,]     #this should usually include one tip
+new.outgroup <- long.nodes[long.nodes < Ntip(hiv.tree)][[1]]
+tree.rooted <- root(hiv.tree, outgroup=new.outgroup, resolve.root=T)
+
+hiv.data <- optimise_prior(hiv.data, type="optimise.baps")
+best.baps.partition <- fastbaps::best_baps_partition(hiv.data, tree.rooted)
+
+hiv.multi.opt.symmetric <- hiv.multi.opt.symmetric[match(tree.rooted$tip.label, hiv.multi.opt.symmetric$Isolates), ]
+
+hiv.multi.opt.symmetric$V1 <- NULL
+hiv.multi.opt.baps$V1 <- NULL
+
+hiv.multi.merged <- merge(hiv.multi.opt.symmetric, hiv.multi.opt.baps, by.x="Isolates", by.y="Isolates")
+colnames(hiv.multi.merged) <- c("Isolate", "Level 1.sym", "Level 2.sym", "Level 1.baps", "Level 2.baps")
+hiv.multi.merged$best.baps.partition.tree <- best.baps.partition[match(hiv.multi.merged$Isolate, names(best.baps.partition))]
+
+write.table(hiv.multi.merged, "./processed_data/hiv_multi_merged.csv", sep=",", col.names = TRUE, row.names = FALSE, quote = FALSE)
+
+hiv.multi.merged <- hiv.multi.merged[match(tree.rooted$tip.label, hiv.multi.merged$Isolate), ]
+
+par(mfrow=c(1,2))
+plot(tree.rooted, show.tip.label=FALSE)
+# tiplabels(pch=1,
+#     col = hiv.multi.opt.symmetric$`Level 1`)
+plot(x = hiv.multi.merged$best.baps.partition.tree, 
+     y = 1:nrow(hiv.multi.merged), 
+     pch=0.1, cex=0.2, axes = FALSE)
+par(mfrow=c(1,1))
+
+combined.df <- stringr::str_split_fixed(hiv.multi.merged$Isolate, pattern = "\\|", n = 4)
+colnames(combined.df) <- c("Isolate", "Type", "Country", "Date")
+combined.df <- cbind(combined.df, hiv.multi.merged[,2:ncol(hiv.multi.merged)])
 ```
 
 Look at clustering by type
 
 ```{r, fig.height=40, fig.width=12}
-cluster.types <- lapply(1:max(combined.df$`Level 3`), function(x){
-  tb <- table(combined.df$Type[combined.df$`Level 3`==x])
+cluster.types <- lapply(1:max(combined.df$best.baps.partition.tree), function(x){
+  tb <- table(combined.df$Type[combined.df$best.baps.partition.tree==x])
   tb[order(tb)]
 })
-cluster.types[order(unlist(lapply(cluster.types, length)))]
+cluster.types[order(unlist(lapply(cluster.types, sum)))]
 
-cluster.country <- lapply(1:max(combined.df$`Level 1`), function(x){
-  tb <- table(combined.df$Country[combined.df$`Level 1`==x])
+cluster.types <- lapply(1:max(combined.df$`Level 2.baps`), function(x){
+  tb <- table(combined.df$Type[combined.df$`Level 2.baps`==x])
   tb[order(tb)]
 })
+names(cluster.types) <- 1:max(combined.df$`Level 2.baps`)
+cluster.types[order(unlist(lapply(cluster.types, sum)))]
 
-ggplot(combined.df, aes(x=Type)) + geom_bar() + facet_wrap(~`Level 1`, scales = "free", ncol = 5)
+par(mfrow=c(1,2))
+plot(tree.rooted, show.tip.label=FALSE)
+# tiplabels(pch=1,
+#     col = hiv.multi.opt.symmetric$`Level 1`)
+plot(x = hiv.multi.merged$`Level 2.baps`[hiv.multi.merged$`Level 2.baps`==87], 
+     y = c(1:nrow(hiv.multi.merged))[hiv.multi.merged$`Level 2.baps`==87], 
+     pch=0.1, cex=0.2, axes = FALSE)
+par(mfrow=c(1,1))
 
+ggplot(combined.df, aes(x=Type)) + geom_bar() + facet_wrap(~`Level 2`, scales = "free", ncol = 5)
+```
+
+Plot propotion of cluster that is it's major type or contains it. I.e type 'AE' would match to both 'A' and 'E'.
+
+```{r}
+cluster.types <- lapply(1:max(combined.df$`Level 2.baps`), function(x){
+  tb <- table(combined.df$Type[combined.df$`Level 2.baps`==x])
+  tb[order(tb)]
+})
+names(cluster.types) <- 1:max(combined.df$`Level 2.baps`)
+cluster.types <- cluster.types[order(unlist(lapply(cluster.types, sum)))]
+
+props <- unlist(lapply(cluster.types, function(c.table){
+  top <- names(c.table)[which.max(c.table)]
+  top.caps <- unlist(strsplit(gsub("[^::A-Z::]","", top), "*"))
+  matching <- grepl(paste(top.caps, collapse = "|"), names(c.table))
+  return(sum(c.table[matching])/sum(c.table))
+}))
+clust.sizes <- unlist(lapply(cluster.types, sum))
+
+cluster.stats <- data.frame(cluster = names(props),
+                            prop.match.top = props,
+                            `cluster size` = clust.sizes, stringsAsFactors = FALSE)
+
+ggplot(cluster.stats, aes(x=1, y=prop.match.top)) + geom_violin() +
+  geom_beeswarm(aes(size=cluster.size)) +
+  theme_bw() + ylab("Proportion comprising the dominant HIV subtype") +
+  labs(size='cluster size') +
+  theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank())
+```
+
+```{r}
+cluster.types <- lapply(1:max(combined.df$best.baps.partition.tree), function(x){
+  tb <- table(combined.df$Type[combined.df$best.baps.partition.tree==x])
+  tb[order(tb)]
+})
+names(cluster.types) <- 1:max(combined.df$best.baps.partition.tree)
+cluster.types <- cluster.types[order(unlist(lapply(cluster.types, sum)))]
+
+props <- unlist(lapply(cluster.types, function(c.table){
+  top <- names(c.table)[which.max(c.table)]
+  top.caps <- unlist(strsplit(gsub("[^::A-Z::]","", top), "*"))
+  matching <- grepl(paste(top.caps, collapse = "|"), names(c.table))
+  return(sum(c.table[matching])/sum(c.table))
+}))
+clust.sizes <- unlist(lapply(cluster.types, sum))
+
+cluster.stats <- data.frame(cluster = names(props),
+                            prop.match.top = props,
+                            `cluster size` = clust.sizes, stringsAsFactors = FALSE)
+
+ggplot(cluster.stats, aes(x=1, y=prop.match.top)) + geom_violin() +
+  geom_beeswarm(aes(size=cluster.size)) +
+  theme_bw() + ylab("Proportion comprising the dominant HIV subtype") +
+  labs(size='cluster size') +
+  theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank())
 ```

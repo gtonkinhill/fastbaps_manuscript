@@ -33,9 +33,10 @@ library(data.table)
 library(ggplot2)
 library(rhierbaps)
 library(starmie)
+library(ggbeeswarm)
 
 STRUCTURE_BINARY <- "/home/gerryt/software/structure/structure"
-CPU <- 15
+CPU <- 20
 ```
 
 Simulators available
@@ -43,7 +44,7 @@ Simulators available
 ```{r}
 # activate_msms(download = TRUE)
 # activate_seqgen("/Users/gt4/software/Seq-Gen.v1.3.3/source/seq-gen")
-activate_scrm(priority = 600)
+activate_scrm(priority = 700)
 list_simulators()
 ```
 
@@ -110,30 +111,32 @@ simulate_island_inputs <- function(n.pops, pop.size, seq.length,
     sumstat_seg_sites("segsites")
 
   simu.stats <- simulate(model)
-  
-  while(ncol(simu.stats$segsites[[1]]$snps)<2){
+
+  while((ncol(simu.stats$segsites[[1]]$snps)<15)){
     simu.stats <- simulate(model)
   }
 
   simu <- make_AG(simu.stats, population.sizes, sample.proportion)
-  
+
   fasta.file.name <- paste(c(directory, "/simulation_", sim.id, ".fasta"), collapse = "")
-  
+
   ape::write.FASTA(simu$aln, file = fasta.file.name)
-  
+
   sparse.data <- fastbaps::import_fasta_sparse_nt(fasta.file.name)
-  
+
   simu.gene.id <- DNAbin2genind(simu$aln)
   fasta <- ape::read.FASTA(fasta.file.name)
   simu <- list(pops=as.numeric(gsub(".*_pop", "", names(fasta))))
   simu.gene.id <- DNAbin2genind(fasta)
-  
+
   return(list(simu.clusters=simu$pops,
          simu.gene.id=simu.gene.id,
          simu.sparse.data=sparse.data,
          fasta.file.name=fasta.file.name,
-         structure.file.name=NULL
+         structure.file.name=NULL,
+         model=model
          ))
+  # return(model)
 
 }
 
@@ -157,7 +160,7 @@ calc_clusters_fastbaps <- function(sparse.data){
 
 }
 
-calc_cluster_snapclust <- function(gene.id, max.k=25){
+calc_cluster_snapclust <- function(gene.id, max.k=30){
   snap.clust <- mclapply(2:max.k, function(k) adegenet::snapclust(gene.id, k), mc.cores = 1)
   snap.clust.aic <- unlist(lapply(snap.clust, adegenet::AIC.snapclust))
   snap.clust.bic <- unlist(lapply(snap.clust, adegenet::BIC.snapclust))
@@ -279,32 +282,35 @@ To compare with structure we keep the mutation rate low to ensure the resulting 
 ```{r}
 n.replicates <- 3
 
-n.pops <- c(5,10, 15, 20, 25)
-pop.size <- 1000
+n.pops <- c(5, 10, 15, 20, 25)
+pop.size <- 100
 seq.length <- 1e5
 
-mutation.rates <- c(0.0001, 0.001, 0.01)
-recombination.rates <- c(0, 1, 10)
-migration.rates <- c(0.001, 0.01, 0.1, 1)
+mutation.rates <- c(0.01)
 
-sample.proportion <- 0.05
+recombination.rates <- c(10, 100)
+migration.rates <- c(0.001,0.01, 0.02, 0.05, 0.1)
+
+sample.proportion <- 0.1
 
 parameters.df <- expand.grid(n.pops, mutation.rates, recombination.rates, migration.rates)
 parameters.df <- do.call(rbind, lapply(1:n.replicates, function(r){
   cbind(rep(r, nrow(parameters.df)), parameters.df)
 }))
 colnames(parameters.df) <- c("replicate", "n.pop", "mutation.rate", "recombination.rate", "migration.rate")
+parameters.df <- parameters.df[order(parameters.df$migration.rate),]
 dim(parameters.df)
 
 results.df <- mclapply(1:nrow(parameters.df), function(i){
   print(i)
   params <- parameters.df[i,,drop=FALSE]
   id <-  paste(paste(colnames(params), params[1,], sep = ""), collapse = "_")
-  temp.simulation <- simulate_island_inputs(params$n.pop, pop.size, seq.length,
-                                            params$mutation.rate, params$recombination.rate, params$migration.rate,
+  system.time({temp.simulation <- simulate_island_inputs(params$n.pop, pop.size, seq.length,
+                                            params$mutation.rate, params$recombination.rate,
+                                            params$migration.rate,
                                             sample.proportion, 
                                             sim.id = id, 
-                                            directory = "./simulations/island/")
+                                            directory = "./simulations/island/")})
   #fastbaps
   fastbaps.results <- calc_clusters_fastbaps(temp.simulation$simu.sparse.data)
   fastbaps.results.df <- do.call(rbind, lapply(1:length(fastbaps.results), function(clust){
@@ -346,114 +352,44 @@ results.df <- mclapply(1:nrow(parameters.df), function(i){
                            ,rhierbaps.results.df
                            # ,structure.results.df
                            )
-  temp.results.df<- cbind(do.call(rbind, rep(list(params), nrow(temp.results.df))),
+  temp.results.df <- cbind(do.call(rbind, rep(list(params), nrow(temp.results.df))),
                           temp.results.df)
+  
+  write.table(temp.results.df, 
+              file = paste(c("./simulations/island/sim_results_",id, ".csv"), collapse = ""),
+              sep = ",", quote = FALSE, row.names = FALSE, col.names = TRUE)
   
   return(temp.results.df)
   
 },  mc.cores = CPU)
 
-results.df <- do.call(rbind, results.df)
-write.table(results.df, file="./simulations/simulation_results_island.csv",
+results.bind.df <- do.call(rbind, results.df)
+write.table(results.bind.df, file="./simulations/simulation_results_island.csv",
             row.names = FALSE, col.names = TRUE, quote=FALSE, sep=",")
 ```
 
+```{bash, eval=FALSE}
+cd simulations/island
+for f in *.csv; do tail -n +2 $f >> combined_sim_results_no_struct.csv; done
+cd ../../
+```
+
+Load simulation results
 
 ```{r}
-# n.replicates <- 3
-# 
-# n.pops <- c(5,10, 15, 20, 25)
-# pop.size <- 1000
-# seq.length <- 1e5
-# 
-# mutation.rates <- c(0.1, 1)
-# recombination.rates <- c(0, 1, 10)
-# migration.rates <- c(0.001, 0.01, 0.1, 1)
-# 
-# sample.proportion <- 0.05
-# 
-# parameters.df <- expand.grid(n.pops, mutation.rates, recombination.rates, migration.rates)
-# parameters.df <- do.call(rbind, lapply(1:n.replicates, function(r){
-#   cbind(rep(r, nrow(parameters.df)), parameters.df)
-# }))
-# colnames(parameters.df) <- c("replicate", "n.pop", "mutation.rate", "recombination.rate", "migration.rate")
-# dim(parameters.df)
-# 
-# results2.df <- do.call(rbind, mclapply(1:nrow(parameters.df), function(i){
-#   print(i)
-#   params <- parameters.df[i,,drop=FALSE]
-#   id <-  paste("large_mu", paste(paste(colnames(params), params[1,], sep = ""), collapse = "_"), sep="_")
-#   temp.simulation <- simulate_island_inputs(params$n.pop, pop.size, seq.length,
-#                                             params$mutation.rate, params$recombination.rate, params$migration.rate,
-#                                             sample.proportion, 
-#                                             sim.id = id, 
-#                                             directory = "./simulations/island/")
-#   #fastbaps
-#   fastbaps.results <- calc_clusters_fastbaps(temp.simulation$simu.sparse.data)
-#   fastbaps.results.df <- do.call(rbind, lapply(1:length(fastbaps.results), function(clust){
-#     return(data.frame(method=names(fastbaps.results)[[clust]],
-#                       clusteval::comembership_table(fastbaps.results[[clust]], temp.simulation$simu.clusters),
-#                fowlkes.mallows = fowlkes_mallows(fastbaps.results[[clust]], temp.simulation$simu.clusters)))
-#     
-#   }))
-#   
-#   #snapclust
-#   snapclust.results <- calc_cluster_snapclust(temp.simulation$simu.gene.id)
-#   snapclust.results.df <- do.call(rbind, lapply(1:length(snapclust.results), function(clust){
-#     return(data.frame(method=names(snapclust.results)[[clust]],
-#                       clusteval::comembership_table(snapclust.results[[clust]], temp.simulation$simu.clusters),
-#                fowlkes.mallows = fowlkes_mallows(snapclust.results[[clust]], temp.simulation$simu.clusters)))
-#     
-#   }))
-#   
-#   #hierBAPs
-#   rhierbaps.results <- calc_cluster_hierbaps(temp.simulation$simu.gene.id)
-#   rhierbaps.results.df <- do.call(rbind, lapply(1:length(rhierbaps.results), function(clust){
-#     return(data.frame(method=names(rhierbaps.results)[[clust]],
-#                       clusteval::comembership_table(rhierbaps.results[[clust]], temp.simulation$simu.clusters),
-#                fowlkes.mallows = fowlkes_mallows(rhierbaps.results[[clust]], temp.simulation$simu.clusters)))
-#     
-#   }))
-#   
-#   temp.results.df <- rbind(fastbaps.results.df,
-#                            snapclust.results.df,
-#                            rhierbaps.results.df)
-#   temp.results.df<- cbind(do.call(rbind, rep(list(params), nrow(temp.results.df))),
-#                           temp.results.df)
-#   
-#   return(temp.results.df)
-#   
-# },  mc.cores = CPU))
-# 
-# write.table(results2.df, file="./simulations/simulation_results_island_no_structure.csv",
-#             row.names = FALSE, col.names = TRUE, quote=FALSE, sep=",")
+combined.no.struct <- fread("./simulations/island/combined_sim_results_no_struct.csv",
+                            data.table = FALSE, header = FALSE)
+colnames(combined.no.struct) <- c("replicate","n.pop","mutation.rate","recombination.rate",
+                                  "migration.rate","method","n_11","n_10","n_01","n_00",
+                                  "fowlkes.mallows")
 ```
 
 plot some results
 
-recombination high (rate=10)
-
 ```{r}
-ggplot(results.and.params.df[results.and.params.df$recombination.rate==10,], aes(x=method, y=value, col=method)) + geom_point() +
-  facet_grid(n.pop ~ migration.rate) +
+ggplot(combined.no.struct, aes(x=method, y=fowlkes.mallows)) + geom_violin(aes(fill=method)) +
+  geom_beeswarm() +
+  facet_grid(recombination.rate~migration.rate) +
   theme_bw() +
-  theme(axis.text.x = element_text(angle = 90, hjust = 1))
-```
-
-recombination medium (1)
-
-```{r}
-ggplot(results.and.params.df[results.and.params.df$recombination.rate==1,], aes(x=method, y=value, col=method)) + geom_point() +
-  facet_grid(n.pop ~ migration.rate) +
-  theme_bw() +
-  theme(axis.text.x = element_text(angle = 90, hjust = 1))
-```
-
-recombination low (0)
-
-```{r}
-ggplot(results.and.params.df[results.and.params.df$recombination.rate==0,], aes(x=method, y=value, col=method)) + geom_point() +
-  facet_grid(n.pop ~ migration.rate) +
-  theme_bw() +
-  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
