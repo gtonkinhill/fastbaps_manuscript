@@ -34,6 +34,7 @@ library(ggplot2)
 library(rhierbaps)
 library(starmie)
 library(ggbeeswarm)
+library(stringr)
 
 STRUCTURE_BINARY <- "/home/gerryt/software/structure/structure"
 CPU <- 20
@@ -289,7 +290,7 @@ seq.length <- 1e5
 mutation.rates <- c(0.01)
 
 recombination.rates <- c(10, 100)
-migration.rates <- c(0.001,0.01, 0.02, 0.05, 0.1)
+migration.rates <- c(0.001,0.01, 0.02)
 
 sample.proportion <- 0.1
 
@@ -374,6 +375,106 @@ for f in *.csv; do tail -n +2 $f >> combined_sim_results_no_struct.csv; done
 cd ../../
 ```
 
+Load structure results
+```{r}
+fasta.files <- Sys.glob("./simulations/island/*.fasta")
+
+params <- str_split_fixed(fasta.files, "_", n=6)[,2:6]
+params[,1] <- gsub("replicate", "", params[,1])
+params[,2] <- gsub("n\\.pop", "", params[,2])
+params[,3] <- gsub("mutation\\.rate", "", params[,3])
+params[,4] <- gsub("recombination\\.rate", "", params[,4])
+params[,5] <- gsub("\\.fasta", "", gsub("migration\\.rate", "", params[,5]))
+params <- apply(params, 2, as.numeric)
+
+all.struct.results <- do.call(rbind, lapply(1:length(fasta.files), function(i){
+  f <- fasta.files[[i]]
+  #retrieve simulated groups
+  sim.pops <- as.numeric(gsub(".*pop", "", names(ape::read.FASTA(f))))
+  
+  #retrieve corresponding structure output file
+  prefix <- gsub("\\.fasta", "", gsub(".*island/simulation_", "", f))
+  struct.file <- Sys.glob(paste(c("./simulations/island/structure/", prefix, "*.out_f"), collapse = ""))
+  print(i)
+  if(params[i,5]==0.001){
+  print(f)
+  print(struct.file)
+  print(params[i,])
+  }
+  
+  if(length(struct.file)>0) {
+    struct.results <- starmie::loadStructure(struct.file)
+    cluster <- apply(data.matrix(
+      struct.results$ancest_df[,3:ncol(struct.results$ancest_df)]), 1,
+      function(r){
+        stopifnot(struct.results$K==length(r))
+        c(1:struct.results$K)[which.max(r)]
+      })
+    stopifnot(max(cluster)==as.numeric(params[i,2]))
+    structure.results.df <- data.frame(method="structure",
+                                       clusteval::comembership_table(cluster, sim.pops),
+                                       fowlkes.mallows = fowlkes_mallows(cluster, sim.pops))
+  } else {
+    structure.results.df <- data.frame(method="structure", n_11=NA, n_10=NA, n_01=NA, n_00=NA, fowlkes.mallows=NA)
+  }
+  
+}))
+
+all.struct.results.df <- data.frame(params, all.struct.results, stringsAsFactors = FALSE)
+colnames(all.struct.results.df) <- c("replicate","n.pop","mutation.rate","recombination.rate",
+                                  "migration.rate","method","n_11","n_10","n_01","n_00",
+                                  "fowlkes.mallows")
+
+ggplot(all.struct.results.df, aes(x=method, y=fowlkes.mallows)) + geom_violin(aes(fill=method)) +
+  geom_beeswarm() + 
+  facet_grid(n.pop~migration.rate)
+```
+
+Look at convergence of MCMC
+
+```{r}
+fasta.files <- Sys.glob("./simulations/island/*.fasta")
+
+params <- str_split_fixed(fasta.files, "_", n=6)[,2:6]
+params[,1] <- gsub("replicate", "", params[,1])
+params[,2] <- gsub("n\\.pop", "", params[,2])
+params[,3] <- gsub("mutation\\.rate", "", params[,3])
+params[,4] <- gsub("recombination\\.rate", "", params[,4])
+params[,5] <- gsub("\\.fasta", "", gsub("migration\\.rate", "", params[,5]))
+params <- apply(params, 2, as.numeric)
+
+all.struct.log.df <- do.call(rbind, lapply(1:length(fasta.files), function(i){
+  f <- fasta.files[[i]]
+  #retrieve simulated groups
+  sim.pops <- as.numeric(gsub(".*pop", "", names(ape::read.FASTA(f))))
+  
+  #retrieve corresponding structure output file
+  prefix <- gsub("\\.fasta", "", gsub(".*island/simulation_", "", f))
+  struct.file <- Sys.glob(paste(c("./simulations/island/structure/", prefix, "*.out_f"), collapse = ""))
+  struct.file.log <- Sys.glob(paste(c("./simulations/island/structure/", prefix, "*.log"), collapse = ""))
+  
+  struct.results <- starmie::loadStructure(struct.file, logfile = struct.file.log)
+  llk.nonburn <- as.data.frame(struct.results$nonburn_df)$`Ln Like`
+  structure.results.df <- data.frame(plot.num=rep(i, length(llk.nonburn)),
+                                     params=rep(paste(c(i, params[i,]), collapse = "_"), length(llk.nonburn)),
+                                     index=1:length(llk.nonburn),
+                                     llk.nonburn=llk.nonburn)
+  
+}))
+
+# all.struct.log.df$fasta <- gsub("\\.fasta", "", gsub(".*simulation_", "", all.struct.log.df$fasta))
+ggplot(all.struct.log.df, aes(x=index, y=llk.nonburn)) + geom_line(aes(colour=params)) +
+  theme(legend.position="none")  + facet_wrap(~params, scales = "free_y")
+
+```
+
+Runs 3,28,34,35,78,85,111,116,122,129 and 140 appear to have convergence issues. For now we remove them.
+
+```{r}
+all.struct.results.df <- all.struct.results.df[-c(3,28,34,35,78,85,111,116,122,129,140),]
+```
+
+
 Load simulation results
 
 ```{r}
@@ -382,14 +483,26 @@ combined.no.struct <- fread("./simulations/island/combined_sim_results_no_struct
 colnames(combined.no.struct) <- c("replicate","n.pop","mutation.rate","recombination.rate",
                                   "migration.rate","method","n_11","n_10","n_01","n_00",
                                   "fowlkes.mallows")
+
+combined.all.df <- rbind(all.struct.results.df, combined.no.struct)
 ```
 
 plot some results
 
 ```{r}
-ggplot(combined.no.struct, aes(x=method, y=fowlkes.mallows)) + geom_violin(aes(fill=method)) +
+combined.all.df <- combined.all.df[!(combined.all.df$migration.rate %in% c(0.1,0.2)),]
+
+combined.all.df$method <- as.character(combined.all.df$method)
+combined.all.df$method[combined.all.df$method=="fb.baps.prior"] <- "BAPs prior"
+combined.all.df$method[combined.all.df$method=="fb.opt.baps.prior"] <- "Optimised BAPs prior"
+combined.all.df$method[combined.all.df$method=="fb.opt.symmetric.prior"] <- "Optimised symmetric prior"
+combined.all.df$method[combined.all.df$method=="snap.best.k.aic"] <- "snapclust AIC"
+combined.all.df$method[combined.all.df$method=="snap.best.k.bic"] <- "snapclust BIC"
+
+ggplot(combined.all.df, aes(x=method, y=fowlkes.mallows)) + geom_violin(aes(fill=method)) +
   geom_beeswarm() +
   facet_grid(recombination.rate~migration.rate) +
   theme_bw() +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  theme(text = element_text(size=20))
 ```

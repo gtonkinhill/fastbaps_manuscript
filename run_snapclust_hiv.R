@@ -1,14 +1,20 @@
 library(adegenet)
 library(ape)
 library(parallel)
+library(fastbaps)
+library(Matrix)
 
-args <- commandArgs(trailingOnly=TRUE)
 
-fasta.file.name <- args[[1]]
+fasta.file.name <- "./data/HIV/hiv_refs_prrt_trim.fas"
 pre.name <- tools::file_path_sans_ext(fasta.file.name)
 
+hiv.data <- import_fasta_sparse_nt("./data/HIV/hiv_refs_prrt_trim.fas", prior = "baps")
+cs <- colSums(hiv.data$snp.matrix>0)
+bad.isolates <- colnames(hiv.data$snp.matrix)[cs>=200]
 
 snp.data <- ape::read.FASTA(fasta.file.name)
+snp.data <- snp.data[!(names(snp.data) %in% bad.isolates)]
+
 snp.data <- adegenet::DNAbin2genind(snp.data)
 snap.clust.results <- parallel::mclapply(seq(20,400,20), function(k) {adegenet::snapclust(snp.data, k = k)}, mc.cores = 10)
 snap.clust.bic <- unlist(parallel::mclapply(snap.clust.results, adegenet::BIC.snapclust, mc.cores = 5))
