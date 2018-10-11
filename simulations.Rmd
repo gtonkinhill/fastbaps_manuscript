@@ -387,7 +387,7 @@ params[,4] <- gsub("recombination\\.rate", "", params[,4])
 params[,5] <- gsub("\\.fasta", "", gsub("migration\\.rate", "", params[,5]))
 params <- apply(params, 2, as.numeric)
 
-all.struct.results <- do.call(rbind, lapply(1:length(fasta.files), function(i){
+all.struct.results <- do.call(rbind, lapply(2:length(fasta.files), function(i){
   f <- fasta.files[[i]]
   #retrieve simulated groups
   sim.pops <- as.numeric(gsub(".*pop", "", names(ape::read.FASTA(f))))
@@ -396,6 +396,7 @@ all.struct.results <- do.call(rbind, lapply(1:length(fasta.files), function(i){
   prefix <- gsub("\\.fasta", "", gsub(".*island/simulation_", "", f))
   struct.file <- Sys.glob(paste(c("./simulations/island/structure/", prefix, "*.out_f"), collapse = ""))
   print(i)
+  
   if(params[i,5]==0.001){
   print(f)
   print(struct.file)
@@ -403,14 +404,19 @@ all.struct.results <- do.call(rbind, lapply(1:length(fasta.files), function(i){
   }
   
   if(length(struct.file)>0) {
-    struct.results <- starmie::loadStructure(struct.file)
+    stopifnot(length(struct.file)==3)
+    struct.results <- lapply(struct.file, starmie::loadStructure)
+    struct.results <- struct.results[which.max(unlist(lapply(struct.results, starmie::getPosterior)))][[1]]
     cluster <- apply(data.matrix(
       struct.results$ancest_df[,3:ncol(struct.results$ancest_df)]), 1,
       function(r){
         stopifnot(struct.results$K==length(r))
         c(1:struct.results$K)[which.max(r)]
       })
-    stopifnot(max(cluster)==as.numeric(params[i,2]))
+    if(max(cluster)!=as.numeric(params[i,2])){
+      print(c("Missing", max(cluster), as.numeric(params[i,2])))
+    }
+    # stopifnot(max(cluster)==as.numeric(params[i,2]))
     structure.results.df <- data.frame(method="structure",
                                        clusteval::comembership_table(cluster, sim.pops),
                                        fowlkes.mallows = fowlkes_mallows(cluster, sim.pops))
@@ -420,7 +426,7 @@ all.struct.results <- do.call(rbind, lapply(1:length(fasta.files), function(i){
   
 }))
 
-all.struct.results.df <- data.frame(params, all.struct.results, stringsAsFactors = FALSE)
+all.struct.results.df <- data.frame(params[2:nrow(params),], all.struct.results, stringsAsFactors = FALSE)
 colnames(all.struct.results.df) <- c("replicate","n.pop","mutation.rate","recombination.rate",
                                   "migration.rate","method","n_11","n_10","n_01","n_00",
                                   "fowlkes.mallows")
@@ -443,7 +449,7 @@ params[,4] <- gsub("recombination\\.rate", "", params[,4])
 params[,5] <- gsub("\\.fasta", "", gsub("migration\\.rate", "", params[,5]))
 params <- apply(params, 2, as.numeric)
 
-all.struct.log.df <- do.call(rbind, lapply(1:length(fasta.files), function(i){
+all.struct.log.df <- do.call(rbind, lapply(2:length(fasta.files), function(i){
   f <- fasta.files[[i]]
   #retrieve simulated groups
   sim.pops <- as.numeric(gsub(".*pop", "", names(ape::read.FASTA(f))))
@@ -453,7 +459,9 @@ all.struct.log.df <- do.call(rbind, lapply(1:length(fasta.files), function(i){
   struct.file <- Sys.glob(paste(c("./simulations/island/structure/", prefix, "*.out_f"), collapse = ""))
   struct.file.log <- Sys.glob(paste(c("./simulations/island/structure/", prefix, "*.log"), collapse = ""))
   
-  struct.results <- starmie::loadStructure(struct.file, logfile = struct.file.log)
+  struct.results <- purrr::map2(struct.file, struct.file.log, starmie::loadStructure)
+  struct.results <- struct.results[which.max(unlist(lapply(struct.results, starmie::getPosterior)))][[1]]
+    
   llk.nonburn <- as.data.frame(struct.results$nonburn_df)$`Ln Like`
   structure.results.df <- data.frame(plot.num=rep(i, length(llk.nonburn)),
                                      params=rep(paste(c(i, params[i,]), collapse = "_"), length(llk.nonburn)),
@@ -467,13 +475,6 @@ ggplot(all.struct.log.df, aes(x=index, y=llk.nonburn)) + geom_line(aes(colour=pa
   theme(legend.position="none")  + facet_wrap(~params, scales = "free_y")
 
 ```
-
-Runs 3,28,34,35,78,85,111,116,122,129 and 140 appear to have convergence issues. For now we remove them.
-
-```{r}
-all.struct.results.df <- all.struct.results.df[-c(3,28,34,35,78,85,111,116,122,129,140),]
-```
-
 
 Load simulation results
 

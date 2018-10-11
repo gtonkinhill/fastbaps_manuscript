@@ -22,7 +22,7 @@ PROGRAM OPTIONS
 
 #define INFERALPHA  0 // (B) Infer ALPHA (the admixture parameter)
 #define POPALPHAS   0 // (B) Individual alpha for each population
-#define ALPHA     1.0 // (d) Dirichlet parameter for degree of admixture 
+#define ALPHA       0 // (d) Dirichlet parameter for degree of admixture 
                              (this is the initial value if INFERALPHA==1).
 
 #define INFERLAMBDA 0 // (B) Infer LAMBDA (the allele frequencies parameter)
