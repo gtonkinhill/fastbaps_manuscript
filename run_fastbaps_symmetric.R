@@ -10,5 +10,5 @@ multi.results <- multi_res_baps(sparse.data, levels = 2, n.cores = 5)
 
 pre.name <- tools::file_path_sans_ext(fasta.file.name)
 
-write.csv(multi.results, file = paste(pre.name, "fastbaps_partition_l1.csv", sep="_"), 
+write.csv(multi.results, file = paste(pre.name, "fastbaps_partition_symmetric_l1.csv", sep="_"), 
           col.names = TRUE, row.names = FALSE, quote = FALSE)
