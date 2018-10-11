@@ -1,4 +1,6 @@
 library(fastbaps)
+library(Matrix)
+
 
 #dont time pre-processing phylogeny ext. In practive this takes very little time anyway
 hiv.data <- import_fasta_sparse_nt("./data/HIV/hiv_refs_prrt_trim.fas", prior = "baps")

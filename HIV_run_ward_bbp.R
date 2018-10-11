@@ -1,4 +1,5 @@
 library(fastbaps)
+library(Matrix)
 
 args <- commandArgs(trailingOnly=TRUE)
 
