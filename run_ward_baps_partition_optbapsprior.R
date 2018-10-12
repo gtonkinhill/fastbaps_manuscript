@@ -15,5 +15,9 @@ ward.best.baps.partition <- fastbaps::best_baps_partition(sparse.data, h)
 
 pre.name <- tools::file_path_sans_ext(fasta.file.name)
 
+multi.results <- data.frame(Isolate=names(ward.best.baps.partition),
+                            baps.cluster=ward.best.baps.partition, 
+                            stringsAsFactors = FALSE)
+
 write.csv(multi.results, file = paste(pre.name, "fastbaps_ward_best_partition_optbaps_prior.csv", sep="_"),
           col.names = TRUE, row.names = FALSE, quote = FALSE)

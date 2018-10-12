@@ -13,6 +13,3 @@ system.time({hiv.data <- optimise_prior(hiv.data, type = "optimise.baps", n.core
 system.time({hiv.multi <- multi_res_baps(hiv.data, levels = 1, n.cores = 10, k.init = 11000)})
 
 write.csv(hiv.multi, file="hiv_multi_opt_baps_prior_l1.csv", quote=FALSE)
-
-write.csv(multi.results, file = paste(pre.name, "hiv_fastbaps_partition_optbapsprior_l1.csv", sep="_"), 
-          col.names = TRUE, row.names = FALSE, quote = FALSE)
