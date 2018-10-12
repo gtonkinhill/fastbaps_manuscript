@@ -15,5 +15,8 @@ h <- fastcluster::hclust.vector(pc$x, method = "ward")
 h$labels <- colnames(hiv.data$snp.matrix)
 ward.best.baps.partition <- fastbaps::best_baps_partition(hiv.data, h)
 
+multi.results <- data.frame(Isolate=names(ward.best.baps.partition),
+                            Cluster=ward.best.baps.partition, stringsAsFactors = FALSE)
+
 write.csv(multi.results, file = paste(pre.name, "hiv_fastbaps_ward_best_partition_optbaps_prior.csv", sep="_"),
           col.names = TRUE, row.names = FALSE, quote = FALSE)
