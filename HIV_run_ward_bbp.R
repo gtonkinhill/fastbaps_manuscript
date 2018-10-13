@@ -18,5 +18,5 @@ ward.best.baps.partition <- fastbaps::best_baps_partition(hiv.data, h)
 multi.results <- data.frame(Isolate=names(ward.best.baps.partition),
                             Cluster=ward.best.baps.partition, stringsAsFactors = FALSE)
 
-write.csv(multi.results, file = paste(pre.name, "hiv_fastbaps_ward_best_partition_optbaps_prior.csv", sep="_"),
+write.csv(multi.results, file = "hiv_fastbaps_ward_best_partition_optbaps_prior.csv",
           col.names = TRUE, row.names = FALSE, quote = FALSE)
