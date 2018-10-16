@@ -1,23 +1,22 @@
-nohup: ignoring input
 [1] "Optimised hyperparameter: 0.197"
 Warning message:
-In write.csv(multi.results, file = paste(pre.name, "fastbaps_partition_optbaps_prior.csv",  :
+In write.csv(multi.results, file = paste(pre.name, "fastbaps_partition_optbaps_prior_l1.csv",  :
   attempt to set 'col.names' ignored
 	Command being timed: "Rscript --vanilla ./fastbaps_manuscript/run_fastbaps_optbaps_prior.R ./data/haemophilus_influenzae/haemophilus_influenzae_core_gene_snps.aln"
-	User time (seconds): 75.15
-	System time (seconds): 1.68
-	Percent of CPU this job got: 106%
-	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:12.24
+	User time (seconds): 32.09
+	System time (seconds): 1.51
+	Percent of CPU this job got: 101%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:32.97
 	Average shared text size (kbytes): 0
 	Average unshared data size (kbytes): 0
 	Average stack size (kbytes): 0
 	Average total size (kbytes): 0
-	Maximum resident set size (kbytes): 323312
+	Maximum resident set size (kbytes): 373884
 	Average resident set size (kbytes): 0
 	Major (requiring I/O) page faults: 0
-	Minor (reclaiming a frame) page faults: 405609
-	Voluntary context switches: 459
-	Involuntary context switches: 71
+	Minor (reclaiming a frame) page faults: 554729
+	Voluntary context switches: 185
+	Involuntary context switches: 46
 	Swaps: 0
 	File system inputs: 0
 	File system outputs: 16

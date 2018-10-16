@@ -1,22 +1,21 @@
-nohup: ignoring input
 Warning message:
-In write.csv(multi.results, file = paste(pre.name, "fastbaps_partition_baps_prior.csv",  :
+In write.csv(multi.results, file = paste(pre.name, "fastbaps_partition_baps_prior_l1.csv",  :
   attempt to set 'col.names' ignored
 	Command being timed: "Rscript --vanilla ./fastbaps_manuscript/run_fastbaps_baps_prior.R ./data/listeria_monocytogenes/listeria_monocytogenes_core_gene_snps.aln"
-	User time (seconds): 37.73
-	System time (seconds): 1.12
-	Percent of CPU this job got: 107%
-	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:36.07
+	User time (seconds): 21.45
+	System time (seconds): 1.41
+	Percent of CPU this job got: 101%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:22.61
 	Average shared text size (kbytes): 0
 	Average unshared data size (kbytes): 0
 	Average stack size (kbytes): 0
 	Average total size (kbytes): 0
-	Maximum resident set size (kbytes): 697004
+	Maximum resident set size (kbytes): 791756
 	Average resident set size (kbytes): 0
 	Major (requiring I/O) page faults: 0
-	Minor (reclaiming a frame) page faults: 265421
-	Voluntary context switches: 210
-	Involuntary context switches: 48
+	Minor (reclaiming a frame) page faults: 405675
+	Voluntary context switches: 123
+	Involuntary context switches: 47
 	Swaps: 0
 	File system inputs: 0
 	File system outputs: 16

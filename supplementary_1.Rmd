@@ -464,9 +464,9 @@ write.csv(hiv.multi, file="hiv_multi_opt_baps_prior.csv", quote=FALSE)
 ```
 
 ```{r}
-hiv.multi.opt.baps <- fread("./processed_data/hiv_multi_opt_baps_prior.csv", data.table = FALSE)
+hiv.multi.opt.baps <- fread("./processed_data/hiv_multi_opt_baps_prior_l1.csv", data.table = FALSE)
 
-hiv.multi.opt.symmetric <- fread("./processed_data/hiv_multi_opt_symmetric_prior.csv", data.table = FALSE)
+hiv.multi.opt.symmetric <- fread("./processed_data/hiv_multi_opt_symmetric_prior_l1.csv", data.table = FALSE)
 ```
 
 Choose a pretty silly outgroup as the earliest sample.
@@ -550,13 +550,6 @@ elbow <- function(sizes){
 set.seed(303)
 
 # max(combined.df$best.baps.partition.tree)
-pc <- irlba::prcomp_irlba(1*t(hiv.data$snp.matrix>0), n=50)
-k.n.clusters <- max(hiv.multi.merged$`Level 1.baps`)
-k.191 <- kmeans(pc$x, centers = k.n.clusters, iter.max = 50, nstart = 5)$cluster
-names(k.191) <- colnames(hiv.data$snp.matrix)
-
-hiv.multi.merged$kmeans.191 <- k.191[match(hiv.multi.merged$Isolate, names(k.191))]
-
 all.k <- lapply(1:200, function(k){
   k <- kmeans(pc$x, centers = k, iter.max = 50, nstart = 5)
 })

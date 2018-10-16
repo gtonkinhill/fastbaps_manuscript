@@ -1,26 +1,25 @@
-nohup: ignoring input
 [1] "Optimised hyperparameter: 0.107"
 Warning message:
-In write.csv(multi.results, file = paste(pre.name, "fastbaps_partition_optbaps_prior.csv",  :
+In write.csv(multi.results, file = paste(pre.name, "fastbaps_partition_optbaps_prior_l1.csv",  :
   attempt to set 'col.names' ignored
 	Command being timed: "Rscript --vanilla ./fastbaps_manuscript/run_fastbaps_optbaps_prior.R ./data/neisseria_meningitidis/neisseria_meningitidis_core_gene_snps.aln"
-	User time (seconds): 837.68
-	System time (seconds): 11.86
-	Percent of CPU this job got: 130%
-	Elapsed (wall clock) time (h:mm:ss or m:ss): 10:52.02
+	User time (seconds): 293.45
+	System time (seconds): 10.08
+	Percent of CPU this job got: 110%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 4:34.68
 	Average shared text size (kbytes): 0
 	Average unshared data size (kbytes): 0
 	Average stack size (kbytes): 0
 	Average total size (kbytes): 0
-	Maximum resident set size (kbytes): 1244720
+	Maximum resident set size (kbytes): 1477028
 	Average resident set size (kbytes): 0
 	Major (requiring I/O) page faults: 0
-	Minor (reclaiming a frame) page faults: 2803038
-	Voluntary context switches: 2471
-	Involuntary context switches: 866
+	Minor (reclaiming a frame) page faults: 2719123
+	Voluntary context switches: 1316
+	Involuntary context switches: 278
 	Swaps: 0
 	File system inputs: 0
-	File system outputs: 48
+	File system outputs: 40
 	Socket messages sent: 0
 	Socket messages received: 0
 	Signals delivered: 0

@@ -1,26 +1,25 @@
-nohup: ignoring input
 [1] "Optimised hyperparameter: 0.061"
 Warning message:
-In write.csv(multi.results, file = paste(pre.name, "fastbaps_partition_optbaps_prior.csv",  :
+In write.csv(multi.results, file = paste(pre.name, "fastbaps_partition_optbaps_prior_l1.csv",  :
   attempt to set 'col.names' ignored
 	Command being timed: "Rscript --vanilla ./fastbaps_manuscript/run_fastbaps_optbaps_prior.R ./data/staphylococcus_aureus/staphylococcus_aureus_core_gene_alignment.snps.aln"
-	User time (seconds): 99.55
-	System time (seconds): 1.73
-	Percent of CPU this job got: 110%
-	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:31.32
+	User time (seconds): 41.04
+	System time (seconds): 1.02
+	Percent of CPU this job got: 103%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:40.72
 	Average shared text size (kbytes): 0
 	Average unshared data size (kbytes): 0
 	Average stack size (kbytes): 0
 	Average total size (kbytes): 0
-	Maximum resident set size (kbytes): 352920
+	Maximum resident set size (kbytes): 386992
 	Average resident set size (kbytes): 0
 	Major (requiring I/O) page faults: 0
-	Minor (reclaiming a frame) page faults: 322929
-	Voluntary context switches: 568
-	Involuntary context switches: 71
+	Minor (reclaiming a frame) page faults: 392956
+	Voluntary context switches: 149
+	Involuntary context switches: 60
 	Swaps: 0
 	File system inputs: 0
-	File system outputs: 24
+	File system outputs: 16
 	Socket messages sent: 0
 	Socket messages received: 0
 	Signals delivered: 0

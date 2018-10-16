@@ -1,26 +1,25 @@
-nohup: ignoring input
 [1] "Optimised hyperparameter: 0.055"
 Warning message:
-In write.csv(multi.results, file = paste(pre.name, "fastbaps_partition_optbaps_prior.csv",  :
+In write.csv(multi.results, file = paste(pre.name, "fastbaps_partition_optbaps_prior_l1.csv",  :
   attempt to set 'col.names' ignored
 	Command being timed: "Rscript --vanilla ./fastbaps_manuscript/run_fastbaps_optbaps_prior.R ./data/ebola/Makona_1610_cds_ig.fas"
-	User time (seconds): 34.80
-	System time (seconds): 1.57
-	Percent of CPU this job got: 131%
-	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:27.59
+	User time (seconds): 16.78
+	System time (seconds): 0.56
+	Percent of CPU this job got: 108%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:15.97
 	Average shared text size (kbytes): 0
 	Average unshared data size (kbytes): 0
 	Average stack size (kbytes): 0
 	Average total size (kbytes): 0
-	Maximum resident set size (kbytes): 465812
+	Maximum resident set size (kbytes): 468652
 	Average resident set size (kbytes): 0
 	Major (requiring I/O) page faults: 0
-	Minor (reclaiming a frame) page faults: 267416
-	Voluntary context switches: 478
-	Involuntary context switches: 37
+	Minor (reclaiming a frame) page faults: 199114
+	Voluntary context switches: 77
+	Involuntary context switches: 32
 	Swaps: 0
 	File system inputs: 0
-	File system outputs: 88
+	File system outputs: 80
 	Socket messages sent: 0
 	Socket messages received: 0
 	Signals delivered: 0
