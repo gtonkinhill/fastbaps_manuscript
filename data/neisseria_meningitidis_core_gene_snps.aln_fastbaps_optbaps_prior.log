@@ -3,20 +3,20 @@ Warning message:
 In write.csv(multi.results, file = paste(pre.name, "fastbaps_partition_optbaps_prior_l1.csv",  :
   attempt to set 'col.names' ignored
 	Command being timed: "Rscript --vanilla ./fastbaps_manuscript/run_fastbaps_optbaps_prior.R ./data/neisseria_meningitidis/neisseria_meningitidis_core_gene_snps.aln"
-	User time (seconds): 293.45
-	System time (seconds): 10.08
-	Percent of CPU this job got: 110%
-	Elapsed (wall clock) time (h:mm:ss or m:ss): 4:34.68
+	User time (seconds): 269.53
+	System time (seconds): 9.09
+	Percent of CPU this job got: 111%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 4:10.48
 	Average shared text size (kbytes): 0
 	Average unshared data size (kbytes): 0
 	Average stack size (kbytes): 0
 	Average total size (kbytes): 0
-	Maximum resident set size (kbytes): 1477028
+	Maximum resident set size (kbytes): 1477056
 	Average resident set size (kbytes): 0
 	Major (requiring I/O) page faults: 0
-	Minor (reclaiming a frame) page faults: 2719123
-	Voluntary context switches: 1316
-	Involuntary context switches: 278
+	Minor (reclaiming a frame) page faults: 2335785
+	Voluntary context switches: 1036
+	Involuntary context switches: 165
 	Swaps: 0
 	File system inputs: 0
 	File system outputs: 40

@@ -3,20 +3,20 @@ Warning message:
 In write.csv(multi.results, file = paste(pre.name, "fastbaps_partition_optbaps_prior_l1.csv",  :
   attempt to set 'col.names' ignored
 	Command being timed: "Rscript --vanilla ./fastbaps_manuscript/run_fastbaps_optbaps_prior.R ./data/listeria_monocytogenes/listeria_monocytogenes_core_gene_snps.aln"
-	User time (seconds): 81.92
-	System time (seconds): 3.57
+	User time (seconds): 75.02
+	System time (seconds): 3.37
 	Percent of CPU this job got: 101%
-	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:24.56
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:17.48
 	Average shared text size (kbytes): 0
 	Average unshared data size (kbytes): 0
 	Average stack size (kbytes): 0
 	Average total size (kbytes): 0
-	Maximum resident set size (kbytes): 843908
+	Maximum resident set size (kbytes): 842880
 	Average resident set size (kbytes): 0
 	Major (requiring I/O) page faults: 0
-	Minor (reclaiming a frame) page faults: 1014115
-	Voluntary context switches: 209
-	Involuntary context switches: 82
+	Minor (reclaiming a frame) page faults: 1085005
+	Voluntary context switches: 210
+	Involuntary context switches: 70
 	Swaps: 0
 	File system inputs: 0
 	File system outputs: 16

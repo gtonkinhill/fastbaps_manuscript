@@ -3,20 +3,20 @@ Warning message:
 In write.csv(multi.results, file = paste(pre.name, "fastbaps_partition_optbaps_prior_l1.csv",  :
   attempt to set 'col.names' ignored
 	Command being timed: "Rscript --vanilla ./fastbaps_manuscript/run_fastbaps_optbaps_prior.R ./data/maela/maela3k_snps.fasta"
-	User time (seconds): 3897.81
-	System time (seconds): 58.89
+	User time (seconds): 3765.53
+	System time (seconds): 56.58
 	Percent of CPU this job got: 123%
-	Elapsed (wall clock) time (h:mm:ss or m:ss): 53:13.53
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 51:33.79
 	Average shared text size (kbytes): 0
 	Average unshared data size (kbytes): 0
 	Average stack size (kbytes): 0
 	Average total size (kbytes): 0
-	Maximum resident set size (kbytes): 5791504
+	Maximum resident set size (kbytes): 5790928
 	Average resident set size (kbytes): 0
 	Major (requiring I/O) page faults: 0
-	Minor (reclaiming a frame) page faults: 18501860
-	Voluntary context switches: 5644
-	Involuntary context switches: 2493
+	Minor (reclaiming a frame) page faults: 15572501
+	Voluntary context switches: 6620
+	Involuntary context switches: 2358
 	Swaps: 0
 	File system inputs: 0
 	File system outputs: 280

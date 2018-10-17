@@ -450,17 +450,17 @@ hiv.data$snp.matrix <- hiv.data$snp.matrix[,cs<200]
 ```{r, eval=FALSE}
 system.time({hiv.data <- optimise_prior(hiv.data, type = "symmetric", n.cores = 10)})
 
-system.time({hiv.multi <- multi_res_baps(hiv.data, levels = 10, n.cores = 4, k.init = 11000)})
+system.time({hiv.multi <- multi_res_baps(hiv.data, levels = 1, n.cores = 10, k.init = 11000)})
 
-write.csv(hiv.multi, file="hiv_multi_opt_symmetric_prior.csv", quote=FALSE)
+write.csv(hiv.multi, file="./processed_data/hiv_multi_opt_baps_prior_l1.csv", quote=FALSE)
 ```
 
 ```{r, eval=FALSE}
 system.time({hiv.data <- optimise_prior(hiv.data, type = "optimise.baps", n.cores = 10)})
 
-system.time({hiv.multi <- multi_res_baps(hiv.data, levels = 2, n.cores = 10, k.init = 11000)})
+system.time({hiv.multi <- multi_res_baps(hiv.data, levels = 1, n.cores = 10, k.init = 11000)})
 
-write.csv(hiv.multi, file="hiv_multi_opt_baps_prior.csv", quote=FALSE)
+write.csv(hiv.multi, file="./processed_data/hiv_multi_opt_symmetric_prior_l1.csv", quote=FALSE)
 ```
 
 ```{r}
@@ -546,52 +546,46 @@ elbow <- function(sizes){
 }
 ```
 
-```{r}
+```{r, eval=FALSE}
 set.seed(303)
 
+pc <- irlba::prcomp_irlba(1*t(hiv.data$snp.matrix>0), n=50)
+
 # max(combined.df$best.baps.partition.tree)
-all.k <- lapply(1:200, function(k){
-  k <- kmeans(pc$x, centers = k, iter.max = 50, nstart = 5)
+all.k <- parallel::mclapply(1:200, function(k){
+  k <- kmeans(pc$x, centers = k, iter.max = 100)
 })
 
 #look for the elbow ignoring k=1 as this seems very far from the remaining points
 wss <- unlist(lapply(all.k, function(x) x$tot.withinss))
 elbow.k <- which.max(elbow(wss[1:length(wss)])) 
 plot(wss)
+print(elbow.k)
 abline(v=elbow.k, col="red")
 
 elbow.k <- all.k[[elbow.k]]$cluster
 names(elbow.k) <- colnames(hiv.data$snp.matrix)
 
-hiv.multi.merged$kmeans.17 <- elbow.k[match(hiv.multi.merged$Isolate, names(elbow.k))]
-```
+hiv.multi.merged$kmeans.18 <- elbow.k[match(hiv.multi.merged$Isolate, names(elbow.k))]
 
-```{r, eval=FALSE}
-# hc.genie <- genie::hclust2(d="euclidean", objects = pc$x, useVpTree=FALSE, thresholdGini = 0.2)
-# hc.genie$labels <- colnames(hiv.data$snp.matrix)
-# hc.genie.bbp <- fastbaps::best_baps_partition(hiv.data, hc.genie)
-# 
-# write.table(data.frame(Isolate=names(hc.genie.bbp), hc.genie.partition=hc.genie.bbp, stringsAsFactors = FALSE),
-#             file = "./processed_data/hcgenie_best_baps_partition.csv", sep=",", col.names = TRUE, row.names = FALSE, quote = FALSE)
-```
+temp.kmeans <- kmeans(pc$x, centers = 193, iter.max = 100)
+hiv.multi.merged$kmeans.193 <- temp.kmeans$cluster[match(hiv.multi.merged$Isolate, names(elbow.k))]
 
-```{r}
-# hclust.genie.bbp <- fread("./processed_data/hcgenie_best_baps_partition.csv",
-#                           data.table = FALSE)
-# hiv.multi.merged <- merge(hiv.multi.merged, hclust.genie.bbp, by.x="Isolate", by.y = "Isolate")
-```
+#Extract the type and country information from the isolate names
 
-Extract the type and country information from the isolate names
-
-```{r}
 combined.df <- stringr::str_split_fixed(hiv.multi.merged$Isolate, pattern = "\\|", n = 4)
 colnames(combined.df) <- c("Isolate", "Type", "Country", "Date")
 combined.df <- cbind(combined.df, hiv.multi.merged[,2:ncol(hiv.multi.merged)])
+
+write.table(combined.df, file="./processed_data/combined_clusters.csv", 
+            sep=",", quote = FALSE, col.names = TRUE, row.names = FALSE)
 ```
 
 Look at clustering by type
 
 ```{r, fig.height=40, fig.width=12}
+combined.df <- fread("./processed_data/combined_clusters.csv", data.table = FALSE)
+
 cluster.types <- lapply(1:max(combined.df$`Level 1.baps`), function(x){
   tb <- table(combined.df$Type[combined.df$`Level 1.baps`==x])
   tb[order(tb)]
@@ -603,24 +597,18 @@ cluster.types <- lapply(1:max(combined.df$`Level 1.sym`), function(x){
   tb[order(tb)]
 })
 cluster.types[order(unlist(lapply(cluster.types, sum)))]
-
-par(mfrow=c(1,2))
-plot(tree.rooted, show.tip.label=FALSE)
-plot(x = hiv.multi.merged$hc.genie.partition, 
-     y = c(1:nrow(hiv.multi.merged)), 
-     pch=0.1, cex=0.2, axes = FALSE)
-par(mfrow=c(1,1))
 ```
 
 Plot propotion of cluster that is it's major type or contains it. I.e type 'AE' would match to both 'A' and 'E'.
 
 ```{r}
-combined.df <- combined.df[,c(1,2,3,4,5,7,9,10)]
+combined.df <- combined.df[,c("Isolate", "Type", "Country", "Date", "Level 1.sym", "Level 1.baps", "best.baps.partition","kmeans.18", "kmeans.193")]
 colnames(combined.df) <- c("Isolate","Type","Country","Date",
                            "Level 1 optimised symmetric prior",
                            "Level 1 optimised BAPs prior",
                            "Best BAPs partition fasttree",
-                           "kmeans k=191")
+                           "kmeans k=18",
+                           "kmeans k=193")
 
 
 all.method.clust.props <- lapply(5:ncol(combined.df), function(j){
@@ -646,7 +634,7 @@ all.method.clust.props <- lapply(5:ncol(combined.df), function(j){
                               stringsAsFactors = FALSE)
 })
 all.method.clust.props <- do.call(rbind, all.method.clust.props)
-# all.method.clust.props <- all.method.clust.props[!(all.method.clust.props$method %in% c("Level 1.sym", "Level 1.baps")),]
+all.method.clust.props <- all.method.clust.props[!(all.method.clust.props$method %in% c("kmeans k=18")),]
 
 ggplot(all.method.clust.props, aes(x=1, y=prop.match.top)) + geom_violin(aes(fill=method)) +
   geom_beeswarm(aes(size=cluster.size)) +
@@ -684,7 +672,7 @@ all.method.clust.props <- lapply(5:ncol(combined.df), function(j){
                               stringsAsFactors = FALSE)
 })
 all.method.clust.props <- do.call(rbind, all.method.clust.props)
-# all.method.clust.props <- all.method.clust.props[!(all.method.clust.props$method %in% c("Level 1.sym", "Level 1.baps")),]
+all.method.clust.props <- all.method.clust.props[!(all.method.clust.props$method %in% c("kmeans k=18")),]
 
 ggplot(all.method.clust.props, aes(x=1, y=prop.match.top)) + geom_violin(aes(fill=method)) +
   geom_beeswarm(aes(size=cluster.size)) +
@@ -703,33 +691,34 @@ umap plot
 library(umap)
 library(Matrix)
 
+umap.defaults$n_neighbors <- 10
 hiv.um <- umap::umap(pc$x, method="umap-learn")
 
 combined.df <- combined.df[match(colnames(hiv.data$snp.matrix),
                                  unlist(apply(combined.df[,c(1,2,3,4)], 1, paste, collapse = "|"))),]
-combined.df$k.means.17 <- elbow.k
+combined.df$k.means.18 <- elbow.k
 
 plot.df <- data.frame(Isolates = colnames(hiv.data$snp.matrix), hiv.um$layout, 
-                      k.means.191=combined.df$`kmeans k=191`,
-                      k.means.17=combined.df$k.means.17,
+                      k.means.193=combined.df$`kmeans k=193`,
+                      k.means.18=combined.df$`kmeans k=18`,
                       stringsAsFactors = FALSE)
 plot.df <- merge(plot.df, hiv.multi.opt.baps, by.x="Isolates", by.y="Isolates")
 
 
-palette(c("#a6cee3","#1f78b4","#b2df8a","#33a02c","#fb9a99","#e31a1c","#fdbf6f","#ff7f00","#cab2d6","#6a3d9a","#ffff99","#b15928"))
+palette(c("#ff7f00","#cab2d6","#6a3d9a","#fdbf6f","#ffff99","#1f78b4","#b15928","#33a02c","#e31a1c","#a6cee3","#fb9a99","#b2df8a"))
 plot(X2~X1, data=plot.df, col=plot.df$`Level 1`, cex=0.1,
      xlab="", ylab="", 
      cex.axis=1.5, font=1.5)
 mtext(side=1, line=3, "UMAP DIM 1", cex=1.5)
 mtext(side=2, line=3, "UMAP DIM 2", cex=1.5)
 
-plot(X2~X1, data=plot.df, col=k.means.191, cex=0.1,
+plot(X2~X1, data=plot.df, col=k.means.193, cex=0.1,
      xlab="", ylab="", 
      cex.axis=1.5, font=1.5)
 mtext(side=1, line=3, "UMAP DIM 1", cex=1.5)
 mtext(side=2, line=3, "UMAP DIM 2", cex=1.5)
 
-plot(X2~X1, data=plot.df, col=k.means.17, cex=0.1,
+plot(X2~X1, data=plot.df, col=k.means.18, cex=0.1,
      xlab="", ylab="", 
      cex.axis=1.5, font=1.5)
 mtext(side=1, line=3, "UMAP DIM 1", cex=1.5)
@@ -747,14 +736,14 @@ plot(X2~X1, data=plot.df, col="white", cex=0.1,
      cex.axis=1.5, font=1.5)
 mtext(side=1, line=3, "UMAP DIM 1", cex=1.5)
 mtext(side=2, line=3, "UMAP DIM 2", cex=1.5)
-text(x =plot.df$X1, y=plot.df$X2, labels = plot.df$k.means.191, col=plot.df$k.means.191, cex=0.3)
+text(x =plot.df$X1, y=plot.df$X2, labels = plot.df$k.means.193, col=plot.df$k.means.193, cex=0.3)
 
 plot(X2~X1, data=plot.df, col="white", cex=0.1,
      xlab="", ylab="", 
      cex.axis=1.5, font=1.5)
 mtext(side=1, line=3, "UMAP DIM 1", cex=1.5)
 mtext(side=2, line=3, "UMAP DIM 2", cex=1.5)
-text(x =plot.df$X1, y=plot.df$X2, labels = plot.df$k.means.17, col=plot.df$k.means.17, cex=0.3)
+text(x =plot.df$X1, y=plot.df$X2, labels = plot.df$k.means.18, col=plot.df$k.means.18, cex=0.3)
 
 col <- c("#a6cee3","#1f78b4","#b2df8a","#33a02c","#fb9a99","#e31a1c","#fdbf6f","#ff7f00","#cab2d6","#6a3d9a","#b15928")
 plot.df$Country <- factor(str_split_fixed(plot.df$Isolates,"\\|", n=4)[,3])

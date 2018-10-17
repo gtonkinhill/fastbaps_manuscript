@@ -3,20 +3,20 @@ Warning message:
 In write.csv(multi.results, file = paste(pre.name, "fastbaps_partition_optbaps_prior_l1.csv",  :
   attempt to set 'col.names' ignored
 	Command being timed: "Rscript --vanilla ./fastbaps_manuscript/run_fastbaps_optbaps_prior.R ./data/staphylococcus_aureus/staphylococcus_aureus_core_gene_alignment.snps.aln"
-	User time (seconds): 41.04
-	System time (seconds): 1.02
+	User time (seconds): 38.69
+	System time (seconds): 1.13
 	Percent of CPU this job got: 103%
-	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:40.72
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:38.48
 	Average shared text size (kbytes): 0
 	Average unshared data size (kbytes): 0
 	Average stack size (kbytes): 0
 	Average total size (kbytes): 0
-	Maximum resident set size (kbytes): 386992
+	Maximum resident set size (kbytes): 387036
 	Average resident set size (kbytes): 0
 	Major (requiring I/O) page faults: 0
-	Minor (reclaiming a frame) page faults: 392956
-	Voluntary context switches: 149
-	Involuntary context switches: 60
+	Minor (reclaiming a frame) page faults: 402638
+	Voluntary context switches: 148
+	Involuntary context switches: 34
 	Swaps: 0
 	File system inputs: 0
 	File system outputs: 16
