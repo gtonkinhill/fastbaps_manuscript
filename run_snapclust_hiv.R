@@ -16,7 +16,7 @@ snp.data <- ape::read.FASTA(fasta.file.name)
 snp.data <- snp.data[!(names(snp.data) %in% bad.isolates)]
 
 snp.data <- adegenet::DNAbin2genind(snp.data)
-snap.clust.results <- adegenet::snapclust(snp.data, k = 193)
+snap.clust.results <- adegenet::snapclust(snp.data, k = 193, pop.ini = "kmeans")
 
 cluster.results <- snap.clust.results$group
 cluster.results <- cbind(rownames(cluster.results), cluster.results)

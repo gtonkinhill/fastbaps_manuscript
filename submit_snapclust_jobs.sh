@@ -27,6 +27,6 @@ MAXK=79
 FILE="./data/maela/maela3k_snps.fasta"
 nohup /usr/bin/time -v Rscript --vanilla ./fastbaps_manuscript/run_snapclust.R $FILE $MAXK > "${FILE}.snapclust.3.log" 2>&1 &
 
-MAXK=188
+MAXK=193
 FILE="./data/HIV/hiv_refs_prrt_trim.fas"
-nohup /usr/bin/time -v Rscript --vanilla ./fastbaps_manuscript/run_snapclust.R $FILE $MAXK > "${FILE}.snapclust.3.log" 2>&1 &
+nohup /usr/bin/time -v Rscript --vanilla ./fastbaps_manuscript/run_snapclust_hiv.R $FILE $MAXK > "${FILE}.snapclust.3.log" 2>&1 &
