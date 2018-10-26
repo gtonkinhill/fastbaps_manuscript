@@ -1,5 +1,5 @@
 ---
-title: "Supplementary Material"
+title: "Supplementary Material - Detailed plots to compare results of different methods."
 author: "Gerry Tonkin-Hill"
 date: "`r Sys.Date()`"
 output: 
@@ -36,34 +36,9 @@ library(ggbeeswarm)
 set.seed(1234)
 ```
 
+Some plotting functions
+
 ```{r}
-plot_custom_ggtree <- function(tree, multi.baps, multi.hc, multi.flat, hb, bbp){
-  colnames(multi.baps)[2:ncol(multi.baps)] <- paste("baps", colnames(multi.baps)[2:ncol(multi.baps)], sep="_")
-  colnames(multi.hc)[2:ncol(multi.hc)] <- paste("hc", colnames(multi.hc)[2:ncol(multi.hc)], sep="_")
-  colnames(multi.flat)[2:ncol(multi.flat)] <- paste("flat", colnames(multi.flat)[2:ncol(multi.flat)], sep="_")
-  
-  multi <- merge(multi.baps, multi.hc, by.x = "Isolates", by.y="Isolates")
-  multi <- merge(multi, multi.flat, by.x = "Isolates", by.y="Isolates")
-  
-  multi$bbp.tree <- bbp[match(multi$Isolates, names(bbp))]
-  multi$HB1 <- hb$`level 1`[match(multi$Isolates, hb$Isolate)]
-  multi$HB2 <- hb$`level 2`[match(multi$Isolates, hb$Isolate)]
-
-  
-  gg <- ggtree(tree)
-  f1 <- facet_plot(gg, panel="hierBAPS L1", data=multi, geom=geom_tile, aes(x=HB1), fill='#e41a1c')
-  f1 <- facet_plot(f1, panel="hierBAPS L2", data=multi, geom=geom_tile, aes(x=HB2), fill='#377eb8')
-  f1 <- facet_plot(f1, panel="Level 1 - BAPS prior", data=multi, geom=geom_tile, aes(x=`baps_Level 1`), fill='#4daf4a')
-  f1 <- facet_plot(f1, panel="Level 2 - BAPS prior", data=multi, geom=geom_tile, aes(x=`baps_Level 2`), fill='#984ea3')
-  f1 <- facet_plot(f1, panel="Level 1 - HC prior", data=multi, geom=geom_tile, aes(x=`hc_Level 1`), fill='#ff7f00')
-  f1 <- facet_plot(f1, panel="Level 2 - HC prior", data=multi, geom=geom_tile, aes(x=`hc_Level 2`), fill='#f781bf')
-  f1 <- facet_plot(f1, panel="Level 1 - flat prior", data=multi, geom=geom_tile, aes(x=`flat_Level 1`), fill='#b2df8a')
-  f1 <- facet_plot(f1, panel="Level 2 - flat prior", data=multi, geom=geom_tile, aes(x=`flat_Level 2`), fill='#cab2d6')
-  f1 <- facet_plot(f1, panel="bbp.tree", data=multi, geom=geom_tile, aes(x=bbp.tree), fill='#a65628')
-  f1 <- f1 + theme(text = element_text(size=15))
-  return(f1)
-}
-
 plot_custom_ggtree_snap <- function(tree, multi.baps, multi.hc, multi.flat, hb, bbp, snap){
   colnames(multi.baps)[2:ncol(multi.baps)] <- paste("baps", colnames(multi.baps)[2:ncol(multi.baps)], sep="_")
   colnames(multi.hc)[2:ncol(multi.hc)] <- paste("hc", colnames(multi.hc)[2:ncol(multi.hc)], sep="_")
@@ -78,15 +53,15 @@ plot_custom_ggtree_snap <- function(tree, multi.baps, multi.hc, multi.flat, hb, 
   multi$snap <- snap[match(multi$Isolates, names(snap))]
 
   
-  gg <- ggtree(tree) + geom_text2(aes(subset=!isTip, label=label), hjust=-.1)
+  gg <- ggtree(tree) #+ geom_text2(aes(subset=!isTip, label=label), hjust=-.1)
   f1 <- facet_plot(gg, panel="hierBAPS L1", data=multi, geom=geom_tile, aes(x=HB1), fill='#e41a1c')
   f1 <- facet_plot(f1, panel="hierBAPS L2", data=multi, geom=geom_tile, aes(x=HB2), fill='#377eb8')
   f1 <- facet_plot(f1, panel="Level 1 - BAPS prior", data=multi, geom=geom_tile, aes(x=`baps_Level 1`), fill='#4daf4a')
   f1 <- facet_plot(f1, panel="Level 2 - BAPS prior", data=multi, geom=geom_tile, aes(x=`baps_Level 2`), fill='#984ea3')
   f1 <- facet_plot(f1, panel="Level 1 - HC prior", data=multi, geom=geom_tile, aes(x=`hc_Level 1`), fill='#ff7f00')
   f1 <- facet_plot(f1, panel="snapclust AIC", data=multi, geom=geom_tile, aes(x=snap), fill='#f781bf')
-  f1 <- facet_plot(f1, panel="Level 1 - flat prior", data=multi, geom=geom_tile, aes(x=`flat_Level 1`), fill='#b2df8a')
-  f1 <- facet_plot(f1, panel="Level 2 - flat prior", data=multi, geom=geom_tile, aes(x=`flat_Level 2`), fill='#cab2d6')
+  f1 <- facet_plot(f1, panel="Level 1 - opt BAPS prior", data=multi, geom=geom_tile, aes(x=`flat_Level 1`), fill='#b2df8a')
+  f1 <- facet_plot(f1, panel="Level 2 - opt BAPS prior", data=multi, geom=geom_tile, aes(x=`flat_Level 2`), fill='#cab2d6')
   f1 <- facet_plot(f1, panel="bbp.tree", data=multi, geom=geom_tile, aes(x=bbp.tree), fill='#a65628')
   f1 <- f1 + theme(text = element_text(size=15))
   return(f1)
@@ -107,13 +82,13 @@ plot_custom_ggtree_snap_2 <- function(tree, multi.baps, multi.hc, multi.flat, hb
   multi$snap <- snap[match(multi$Isolates, names(snap))]
 
   
-  gg <- ggtree(tree) + geom_text2(aes(subset=!isTip, label=label), hjust=-.1)
+  gg <- ggtree(tree) #+ geom_text2(aes(subset=!isTip, label=label), hjust=-.1)
   f1 <- facet_plot(gg, panel="hierBAPS", data=multi, geom=geom_tile, aes(x=HB1), fill='#e41a1c')
     f1 <- facet_plot(f1, panel="snapclust AIC", data=multi, geom=geom_tile, aes(x=snap), fill='#f781bf')
   f1 <- facet_plot(f1, panel="BHC prior", data=multi, geom=geom_tile, aes(x=`hc_Level 1`), fill='#ff7f00')
   f1 <- facet_plot(f1, panel="optimised BAPs prior", data=multi, geom=geom_tile, aes(x=`flat_Level 1`), fill='#b2df8a')
-  f1 <- facet_plot(f1, panel="best BAPs partition fasttree", data=multi, geom=geom_tile, aes(x=bbp.tree), fill='#a65628')
-  f1 <- f1 + theme(text = element_text(size=15))
+  f1 <- facet_plot(f1, panel="fastbaps partition", data=multi, geom=geom_tile, aes(x=bbp.tree), fill='#a65628')
+  f1 <- f1 + theme(text = element_text(size=17))
   return(f1)
 }
 
@@ -131,7 +106,7 @@ plot_custom_ggtree_snap_3 <- function(tree, multi.baps, multi.hc, multi.flat, hb
   multi$snap <- snap[match(multi$Isolates, names(snap))]
 
   
-  gg <- ggtree(tree) + geom_text2(aes(subset=!isTip, label=label), hjust=-.1)
+  gg <- ggtree(tree) #+ geom_text2(aes(subset=!isTip, label=label), hjust=-.1)
   f1 <- facet_plot(gg, panel="hierBAPS", data=multi, geom=geom_tile, aes(x=HB1), fill='#e41a1c')
   f1 <- facet_plot(f1, panel="snapclust AIC", data=multi, geom=geom_tile, aes(x=snap), fill='#f781bf')
   f1 <- facet_plot(f1, panel="BHC prior", data=multi, geom=geom_tile, aes(x=`hc_Level 1`), fill='#ff7f00')
@@ -168,9 +143,6 @@ e.coli.snap.aic <- e.coli.snap[,e.coli.sum$K[which.min(e.coli.sum$AIC)]]
 names(e.coli.snap.aic) <- e.coli.snap$Isolate
 
 e.coli.tree <- phytools::read.newick("./data/escherichia_coli/escherichia_coli_core_gene_alignment.snps.aln.fasttree")
-# e.coli.tree <- phytools::read.newick("./data/iqtree/escherichia_coli_core_gene_alignment.snps.aln.treefile")
-temp.label <- str_split_fixed(e.coli.tree$tip.label, pattern = "_", n=2)
-e.coli.tree$tip.label <- paste(temp.label[,1], gsub("_", "#", temp.label[,2]), sep="_")
 
 e.coli.tree <- phytools::midpoint.root(e.coli.tree)
 e.coli.bbp.tree <- fastbaps::best_baps_partition(e.coli.data, e.coli.tree)
@@ -208,9 +180,6 @@ h.inf.snap.aic <- h.inf.snap[,h.inf.sum$K[which.min(h.inf.sum$AIC)]]
 names(h.inf.snap.aic) <- h.inf.snap$Isolate
 
 h.inf.tree <- phytools::read.newick("./data/haemophilus_influenzae/haemophilus_influenzae_core_gene_snps.aln.fasttree")
-# h.inf.tree <- phytools::read.newick("./data/iqtree/haemophilus_influenzae_core_gene_snps.aln.treefile")
-temp.label <- str_split_fixed(h.inf.tree$tip.label, pattern = "_", n=2)
-h.inf.tree$tip.label <- paste(temp.label[,1], gsub("_", "#", temp.label[,2]), sep="_")
 
 h.inf.tree <- phytools::midpoint.root(h.inf.tree)
 h.inf.bbp.tree <- fastbaps::best_baps_partition(h.inf.data, h.inf.tree)
@@ -222,6 +191,7 @@ plot_custom_ggtree_snap(tree = h.inf.tree, multi.baps = h.inf.multi.baps,
                    snap = h.inf.snap.aic)
 ```
 
+Plots for publication
 
 ```{r}
 plot_custom_ggtree_snap_2(tree = h.inf.tree, multi.baps = h.inf.multi.baps,
@@ -229,14 +199,6 @@ plot_custom_ggtree_snap_2(tree = h.inf.tree, multi.baps = h.inf.multi.baps,
                    multi.flat = h.inf.multi.flat,
                    hb = h.inf.hb, bbp = h.inf.bbp.tree,
                    snap = h.inf.snap.aic)
-```
-
-Can use bootstrap to gain a feeling for the confidence of our results
-
-```{r}
-h.inf.boot.m <- boot_fast_baps(h.inf.data)
-h.inf.hc <- as.dendrogram(fast_baps(h.inf.data))
-gplots::heatmap.2(h.inf.boot.m, h.inf.hc, h.inf.hc, labRow = FALSE, labCol = FALSE,tracecol=NA)
 ```
 
 ##Listeria Monocytogenes
@@ -264,9 +226,6 @@ listeria.snap.aic <- listeria.snap[,listeria.sum$K[which.min(listeria.sum$AIC)]]
 names(listeria.snap.aic) <- listeria.snap$Isolate
 
 listeria.tree <- ape::read.tree("./data/listeria_monocytogenes/listeria_monocytogenes_core_gene_snps.aln.fasttree")
-# listeria.tree <- phytools::read.newick("./data/iqtree/listeria_monocytogenes_core_gene_snps.aln.treefile")
-temp.label <- str_split_fixed(listeria.tree$tip.label, pattern = "_", n=2)
-listeria.tree$tip.label <- paste(temp.label[,1], gsub("_", "#", temp.label[,2]), sep="_")
 
 listeria.tree <- phytools::midpoint.root(listeria.tree)
 listeria.bbp.tree <- fastbaps::best_baps_partition(listeria.data, listeria.tree)
@@ -308,9 +267,6 @@ n.meng.snap.aic <- n.meng.snap[,n.meng.sum$K[which.min(n.meng.sum$AIC)]]
 names(n.meng.snap.aic) <- n.meng.snap$Isolate
 
 n.meng.tree <- phytools::read.newick("./data/neisseria_meningitidis/neisseria_meningitidis_core_gene_snps.aln.fasttree")
-# n.meng.tree <- phytools::read.newick("./data/iqtree/neisseria_meningitidis_core_gene_snps.aln.treefile")
-temp.label <- str_split_fixed(n.meng.tree$tip.label, pattern = "_", n=2)
-n.meng.tree$tip.label <- paste(temp.label[,1], gsub("_", "#", temp.label[,2]), sep="_")
 
 n.meng.tree <- phytools::midpoint.root(n.meng.tree)
 n.meng.bbp.tree <- fastbaps::best_baps_partition(n.meng.data, n.meng.tree)
@@ -349,9 +305,6 @@ s.aus.hb <- fread("./data/staphylococcus_aureus_core_gene_alignment.snps_hierbap
 s.aus.hb <- s.aus.hb[match(s.aus.multi.baps$Isolates, s.aus.hb$Isolate),]
 
 s.aus.tree <- phytools::read.newick("./data/staphylococcus_aureus/staphylococcus_aureus_core_gene_alignment.snps.aln.fasttree")
-# s.aus.tree <- phytools::read.newick("./data/iqtree/staphylococcus_aureus_core_gene_alignment.snps.aln.treefile")
-temp.label <- str_split_fixed(s.aus.tree$tip.label, pattern = "_", n=2)
-s.aus.tree$tip.label <- paste(temp.label[,1], gsub("_", "#", temp.label[,2]), sep="_")
 
 s.aus.snap <- fread("./data/staphylococcus_aureus_core_gene_alignment.snps_snapclust_results.csv", 
                     data.table = FALSE)
@@ -380,22 +333,16 @@ plot_custom_ggtree_snap_2(s.aus.tree, multi.baps = s.aus.multi.baps,
 
 ##Ebola
 
-```{r, cache=TRUE}
+```{r}
 ebola.data <- import_fasta_sparse_nt("./data/ebola/Makona_1610_cds_ig.fas", prior = "baps")
-dim(ebola.data$snp.matrix)
 
 ebola.multi.baps <- multi_res_baps(ebola.data, levels = 2, n.cores = 4)
 
 ebola.data <- optimise_prior(ebola.data, type = "hc", n.cores = 4)
 ebola.multi.hc <- multi_res_baps(ebola.data, levels = 2, n.cores = 4)
 
-# ebola.data <- optimise_prior(ebola.data, type = "optimise.baps", n.cores = 4)
-# d <- snp_dist(ebola.data)
-# h <- hclust(as.dist(d), method="ward.D2")
-# ebola.multi.hc <- multi_level_best_baps_partition(ebola.data, h, levels = 2, n.cores = 4)
 
-ebola.data <- optimise_prior(ebola.data, type = "symmetric", n.cores = 4)
-
+ebola.data <- optimise_prior(ebola.data, type = "optimise.symmetric", n.cores = 4)
 ebola.multi.flat <- multi_res_baps(ebola.data, levels = 2, n.cores = 4)
 
 ebola.hb <- fread("./data/Makona_1610_cds_ig_hierbaps_partition.csv", data.table = FALSE)
@@ -408,9 +355,7 @@ ebola.sum <- fread("./data/Makona_1610_cds_ig_snapclust_run_summary.csv",
 ebola.snap.aic <- ebola.snap[,ebola.sum$K[which.min(ebola.sum$AIC)]]
 names(ebola.snap.aic) <- ebola.snap$Isolate
 
-
-# ebola.tree <- phytools::read.newick("./data/ebola/Makona_1610_cds_ig_iqtree_allnni.treefile")
-ebola.tree <- phytools::read.newick("./data/iqtree/Makona_1610_cds_ig.fas.treefile")
+ebola.tree <- phytools::read.newick("./data/ebola/Makona_1610_cds_ig_iqtree_allnni.treefile")
 
 plot(ebola.tree, show.tip.label = FALSE)
 ebola.tree <- phytools::midpoint.root(ebola.tree)
@@ -448,7 +393,7 @@ hiv.data$snp.matrix <- hiv.data$snp.matrix[,cs<200]
 ```
 
 ```{r, eval=FALSE}
-system.time({hiv.data <- optimise_prior(hiv.data, type = "symmetric", n.cores = 10)})
+system.time({hiv.data <- optimise_prior(hiv.data, type = "optimise.symmetric", n.cores = 10)})
 
 system.time({hiv.multi <- multi_res_baps(hiv.data, levels = 1, n.cores = 10, k.init = 11000)})
 
@@ -543,11 +488,13 @@ elbow <- function(sizes){
 }
 ```
 
-```{r, eval=FALSE}
+```{r}
 set.seed(303)
 
 pc <- irlba::prcomp_irlba(1*t(hiv.data$snp.matrix>0), n=50)
+```
 
+```{r, eval=FALSE}
 # max(combined.df$best.baps.partition.tree)
 all.k <- lapply(1:200, function(k){
   k <- kmeans(pc$x, centers = k, iter.max = 100)
@@ -578,27 +525,11 @@ write.table(combined.df, file="./processed_data/combined_clusters.csv",
             sep=",", quote = FALSE, col.names = TRUE, row.names = FALSE)
 ```
 
-Look at clustering by type
-
-```{r, fig.height=40, fig.width=12}
-combined.df <- fread("./processed_data/combined_clusters.csv", data.table = FALSE)
-
-cluster.types <- lapply(1:max(combined.df$`Level 1.baps`), function(x){
-  tb <- table(combined.df$Type[combined.df$`Level 1.baps`==x])
-  tb[order(tb)]
-})
-cluster.types[order(unlist(lapply(cluster.types, sum)))]
-
-cluster.types <- lapply(1:max(combined.df$`Level 1.sym`), function(x){
-  tb <- table(combined.df$Country[combined.df$`Level 1.sym`==x])
-  tb[order(tb)]
-})
-cluster.types[order(unlist(lapply(cluster.types, sum)))]
-```
-
 Plot propotion of cluster that is it's major type or contains it. I.e type 'AE' would match to both 'A' and 'E'.
 
 ```{r}
+combined.df <- fread("./processed_data/combined_clusters.csv", data.table = FALSE)
+
 combined.df <- combined.df[,c("Isolate", "Type", "Country", "Date", "Level 1.sym", "Level 1.baps", "best.baps.partition","kmeans.21", "kmeans.193")]
 colnames(combined.df) <- c("Isolate","Type","Country","Date",
                            "Level 1 optimised symmetric prior",
@@ -633,7 +564,7 @@ all.method.clust.props <- lapply(5:ncol(combined.df), function(j){
 all.method.clust.props <- do.call(rbind, all.method.clust.props)
 all.method.clust.props <- all.method.clust.props[!(all.method.clust.props$method %in% c("kmeans k=21")),]
 
-ggplot(all.method.clust.props, aes(x=1, y=prop.match.top)) + geom_violin(aes(fill=method)) +
+gg1 <- ggplot(all.method.clust.props, aes(x=1, y=prop.match.top)) + geom_violin(aes(fill=method)) +
   geom_beeswarm(aes(size=cluster.size)) +
   facet_wrap(~method, ncol = 2) +
   theme_bw() + ylab("Proportion comprising the dominant HIV subtype") +
@@ -641,7 +572,9 @@ ggplot(all.method.clust.props, aes(x=1, y=prop.match.top)) + geom_violin(aes(fil
   theme(axis.title.x=element_blank(),
         axis.text.x=element_blank(),
         axis.ticks.x=element_blank()) +
-  theme(text = element_text(size=20))
+  theme(text = element_text(size=20)) +
+  theme(legend.position="none")
+gg1
 ```
 
 Investigate dominant country proportions
@@ -671,7 +604,7 @@ all.method.clust.props <- lapply(5:ncol(combined.df), function(j){
 all.method.clust.props <- do.call(rbind, all.method.clust.props)
 all.method.clust.props <- all.method.clust.props[!(all.method.clust.props$method %in% c("kmeans k=21")),]
 
-ggplot(all.method.clust.props, aes(x=1, y=prop.match.top)) + geom_violin(aes(fill=method)) +
+gg2 <- ggplot(all.method.clust.props, aes(x=1, y=prop.match.top)) + geom_violin(aes(fill=method)) +
   geom_beeswarm(aes(size=cluster.size)) +
   facet_wrap(~method, ncol = 2) +
   theme_bw() + ylab("Proportion comprising the dominant country") +
@@ -680,7 +613,14 @@ ggplot(all.method.clust.props, aes(x=1, y=prop.match.top)) + geom_violin(aes(fil
         axis.text.x=element_blank(),
         axis.ticks.x=element_blank()) +
   theme(text = element_text(size=20))
+gg2
 ```
+
+```{r}
+library(patchwork)
+gg1 + gg2
+```
+
 
 umap plot
 
@@ -692,7 +632,6 @@ hiv.um <- umap::umap(pc$x, method="umap-learn")
 
 combined.df <- combined.df[match(colnames(hiv.data$snp.matrix),
                                  unlist(apply(combined.df[,c(1,2,3,4)], 1, paste, collapse = "|"))),]
-combined.df$k.means.21 <- elbow.k
 
 plot.df <- data.frame(Isolates = colnames(hiv.data$snp.matrix), hiv.um$layout, 
                       k.means.193=combined.df$`kmeans k=193`,
@@ -702,7 +641,7 @@ plot.df <- merge(plot.df, hiv.multi.opt.baps, by.x="Isolates", by.y="Isolates")
 
 
 palette(c("#ff7f00","#cab2d6","#6a3d9a","#fdbf6f","#ffff99","#1f78b4","#b15928","#33a02c","#e31a1c","#a6cee3","#fb9a99","#b2df8a"))
-plot(X2~X1, data=plot.df, col=plot.df$`Level 1`, cex=0.1,
+plot(X2~X1, data=plot.df, col=plot.df$`Level 1`, cex=0.01,
      xlab="", ylab="", 
      cex.axis=1.5, font=1.5)
 mtext(side=1, line=3, "UMAP DIM 1", cex=1.5)
@@ -740,86 +679,6 @@ plot(X2~X1, data=plot.df, col="white", cex=0.1,
 mtext(side=1, line=3, "UMAP DIM 1", cex=1.5)
 mtext(side=2, line=3, "UMAP DIM 2", cex=1.5)
 text(x =plot.df$X1, y=plot.df$X2, labels = plot.df$k.means.21, col=plot.df$k.means.21, cex=0.3)
-
-col <- c("#a6cee3","#1f78b4","#b2df8a","#33a02c","#fb9a99","#e31a1c","#fdbf6f","#ff7f00","#cab2d6","#6a3d9a","#b15928")
-plot.df$Country <- factor(str_split_fixed(plot.df$Isolates,"\\|", n=4)[,3])
-plot(X2~X1, data=plot.df, col="white", cex=0.1,
-     xlab="", ylab="", 
-     cex.axis=1.5, font=1.5)
-mtext(side=1, line=3, "UMAP DIM 1", cex=1.5)
-mtext(side=2, line=3, "UMAP DIM 2", cex=1.5)
-max.col <- length(unique(plot.df$Country))/length(col)
-text(x =plot.df$X1, y=plot.df$X2, labels = plot.df$`Level 1`, col=col[as.numeric(plot.df$Country)/max.col], cex=0.3)
-
-```
-
-Plot clusters on world map
-
-```{r}
-summarised.df <- combined.df
-summarised.df$Country <- as.character(summarised.df$Country)
-summarised.df$temp.interaction <- paste(summarised.df$Country, summarised.df$`Level 1 optimised BAPs prior`)
-summarised.df <- summarised.df %>% group_by(temp.interaction) %>%
-  summarise(
-    Country=unique(Country),
-    Cluster=unique(`Level 1 optimised BAPs prior`),
-    count=n()
-  )
-head(summarised.df)
-
-cluster.sizes <- summarised.df %>% group_by(Cluster) %>% summarise(
-  count=sum(count)
-)
-
-summarised.df$count <- summarised.df$count/cluster.sizes$count[match(summarised.df$Cluster, cluster.sizes$Cluster)]
-
-capitals <- fread("data/capital_locations.tsv", data.table = FALSE)
-capitals$Country <- str_to_upper(capitals$Country)
-capitals$Country <- gsub(" ", "", capitals$Country)
-
-capitals <- rbind(capitals, data.frame(Country=c(
-  "JAPAN", "GRENADA","MONGOLIA","SAINTVINCENTANDTHEGRENADINES","SOUTHKOREA",
-  "TRINIDADANDTOBAGO","YEMEN","DEMREPOFCONGO","HONGKONG","MACAU","MONTENEGRO",
-  "SERBIA","TAIWAN","UNITEDKINGDOM","DOMINICANREPUBLIC","IRAN","MOLDOVA","RWANDA",
-  "SINGAPORE","TANZANIA","UNITEDSTATES",""),
-  Capital=c("Tokyo","St. George's","Ulaanbaatar","Kingstown","Seoul","Port of Spain",
-            "Sana'a, Aden","Kinshasa","HONGKONG","MACAU","Podgorica","Belgrade","Taipei",
-            "London","Santo Domingo","Tehran","Chisinau","Kigali","SINGAPORE","Dodoma",
-            "Washington, D.C.",""),
-  Latitude=c("35.6895N","12.0561N","47.8864N","13.1600N","37.5665N","10.6549N","15.3694N",
-             "4.4419S","22.3964N","22.1987N","42.4304N","44.7866N","25.0330N","51.5074N",
-             "18.4861N","35.6892N","47.0105N","1.9706S","1.3521N","6.1630S","38.9072N","0N"),
-  Longitude=c("139.6917E", "61.7488W","106.9057E","61.2248W","126.9780E","61.5019W","44.1910E",
-              "15.2663E","114.1095E","113.5439E","19.2594E","20.4489E","121.5654E","0.1278W",
-              "69.9312W","51.3890E","28.8638E","30.1044E","103.8198E","35.7516E","77.0369W","0E"), 
-  stringsAsFactors = FALSE))
-
-temp <- as.numeric(gsub("[N|S]","", capitals$Latitude))
-temp[!grepl(".*N.*", capitals$Latitude)] <- -temp[!grepl(".*N.*", capitals$Latitude)]
-capitals$Latitude <- temp
-
-temp <- as.numeric(gsub("[E|W]","", capitals$Longitude))
-temp[!grepl(".*E.*", capitals$Longitude)] <- -temp[!grepl(".*E.*", capitals$Longitude)]
-capitals$Longitude <- temp
-
-capitals <- capitals[capitals$Country %in% summarised.df$Country,]
-
-d <- geosphere::distm(capitals[,c("Longitude","Latitude")])
-colnames(d) <- rownames(d) <- capitals$Country
-h <- hclust(as.dist(d), method = "ward.D2")
-
-summarised.df$Country <- factor(summarised.df$Country, levels = h$labels[h$order])
-
-ggplot(summarised.df, aes(Cluster, Country)) + 
-  geom_tile(aes(fill = count), colour = "white") +
-  scale_fill_gradient(low = "lightblue", high = "darkblue") +
-  theme(legend.title = element_text(size = 10),
-        legend.text = element_text(size = 12),
-        plot.title = element_text(size=16),
-        axis.title=element_text(size=14,face="bold"),
-        axis.text.y = element_text(size=8)) +
-  labs(fill = "Proportion") +
-  theme_bw()
 ```
 
 ## Investigate Maela
@@ -829,14 +688,13 @@ maela.data <- fastbaps::import_fasta_sparse_nt("./data/maela/maela3k_snps.fasta"
 maela.data <- optimise_prior(maela.data, type = "optimise.baps")
 
 system.time({maela.optimise.baps.multi <- multi_res_baps(maela.data, levels = 2, n.cores = 4)})
-
-maela.data <- optimise_prior(maela.data, type = "baps")
-system.time({maela.baps.multi <- multi_res_baps(maela.data, levels = 2, n.cores = 4)})
 ```
 
 ```{r}
 library(umap)
 library(Matrix)
+
+set.seed(824)
 
 pc.maela <- irlba::prcomp_irlba(1*t(maela.data$snp.matrix>0), n=50)
 um.maela <- umap::umap(pc.maela$x, method="umap-learn")
@@ -857,15 +715,15 @@ which.max(elbow(wss))
 k.means.48 <- kmeans(pc.maela$x, centers = 48, iter.max = 50, nstart = 5)$cluster
 
 
-plot.df <- data.frame(Isolates = colnames(maela.data$snp.matrix), um.maela$layout, 
+maela.plot.df <- data.frame(Isolates = colnames(maela.data$snp.matrix), um.maela$layout, 
                       k.means.79=k.means.79, 
                       k.means.48=k.means.48,
                       stringsAsFactors = FALSE)
-plot.df <- merge(plot.df, maela.optimise.baps.multi, by.x="Isolates", by.y="Isolates")
+maela.plot.df <- merge(maela.plot.df, maela.optimise.baps.multi, by.x="Isolates", by.y="Isolates")
 
 
 palette(c("#a6cee3","#1f78b4","#b2df8a","#33a02c","#fb9a99","#e31a1c","#fdbf6f","#ff7f00","#cab2d6","#6a3d9a","#b15928"))
-plot(X2~X1, data=plot.df, col=plot.df$`Level 1`, cex=1,
+plot(X2~X1, data=maela.plot.df, col=maela.plot.df$`Level 1`, cex=1,
      xlab="", ylab="", 
      cex.axis=1.5, font=1.5)
 mtext(side=1, line=3, "UMAP DIM 1", cex=1.5)
@@ -874,26 +732,25 @@ mtext(side=2, line=3, "UMAP DIM 2", cex=1.5)
 cols <- list(c(166,206,227),c(31,120,180),c(178,223,138),c(51,160,44),c(251,154,153),c(227,26,28),c(253,191,111),c(255,127,0),c(202,178,214),c(106,61,154),c(177,89,40))
 palette(unlist(lapply(cols, function(col) rgb(col[[1]], col[[2]],col[[3]], alpha=100, maxColorValue=255))))
 
-plot(X2~X1, data=plot.df, col="white", cex=0.1,
+plot(X2~X1, data=maela.plot.df, col="white", cex=0.1,
      xlab="", ylab="", 
      cex.axis=1.5, font=1.5)
 mtext(side=1, line=3, "UMAP DIM 1", cex=1.5)
 mtext(side=2, line=3, "UMAP DIM 2", cex=1.5)
-text(x =plot.df$X1, y=plot.df$X2, labels = plot.df$`Level 1`, col=plot.df$`Level 1`, cex=0.6)
+text(x =maela.plot.df$X1, y=maela.plot.df$X2, labels = maela.plot.df$`Level 1`, col=maela.plot.df$`Level 1`, cex=0.6)
 
-plot(X2~X1, data=plot.df, col="white", cex=0.1,
+plot(X2~X1, data=maela.plot.df, col="white", cex=0.1,
      xlab="", ylab="", 
      cex.axis=1.5, font=1.5)
 mtext(side=1, line=3, "UMAP DIM 1", cex=1.5)
 mtext(side=2, line=3, "UMAP DIM 2", cex=1.5)
-text(x =plot.df$X1, y=plot.df$X2, labels = plot.df$k.means.48, col=plot.df$k.means.48, cex=0.6)
+text(x =maela.plot.df$X1, y=maela.plot.df$X2, labels = maela.plot.df$k.means.48, col=maela.plot.df$k.means.48, cex=0.6)
 
-plot(X2~X1, data=plot.df, col="white", cex=0.1,
+plot(X2~X1, data=maela.plot.df, col="white", cex=0.1,
      xlab="", ylab="", 
      cex.axis=1.5, font=1.5)
 mtext(side=1, line=3, "UMAP DIM 1", cex=1.5)
 mtext(side=2, line=3, "UMAP DIM 2", cex=1.5)
-text(x =plot.df$X1, y=plot.df$X2, labels = plot.df$k.means.79, col=plot.df$k.means.79, cex=0.6)
+text(x =maela.plot.df$X1, y=maela.plot.df$X2, labels = maela.plot.df$k.means.79, col=maela.plot.df$k.means.79, cex=0.6)
 
 ```
-
