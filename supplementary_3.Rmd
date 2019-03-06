@@ -280,7 +280,7 @@ calc_cluster_structure <- function(sparse.data, prefix, directory, K){
 
 To compare with structure we keep the mutation rate low to ensure the resulting alignment is not too large.
 
-```{r}
+```{r, eval=FALSE}
 n.replicates <- 3
 
 n.pops <- c(5, 10, 15, 20, 25)

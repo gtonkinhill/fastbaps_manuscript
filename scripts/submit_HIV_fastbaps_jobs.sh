@@ -15,3 +15,8 @@ nohup /usr/bin/time -v Rscript --vanilla ./fastbaps_manuscript/scripts/HIV_run_b
 nohup /usr/bin/time -v Rscript --vanilla ./fastbaps_manuscript/scripts/HIV_run_baps_prior_initK1000.R > ./data/HIV_run_baps_prior_initK1000.log 2>&1 &
 
 
+nohup /usr/bin/time -v Rscript --vanilla ./fastbaps_manuscript/scripts/HIV_run_baps_fasttree_diff_sizes.R > ./data/HIV_run_baps_prior_fasttree_diff_sizes.log 2>&1 &
+
+nohup /usr/bin/time -v Rscript --vanilla ./fastbaps_manuscript/scripts/HIV_run_baps_prior_diff_sizes.R > ./data/HIV_run_baps_prior_diff_sizes.log 2>&1 &
+
+nohup /usr/bin/time -v Rscript --vanilla ./fastbaps_manuscript/scripts/scripts/run_baps_genie_diff_sizes.R > ./data/HIV_run_baps_prior_genie_diff_sizes.log 2>&1 &
