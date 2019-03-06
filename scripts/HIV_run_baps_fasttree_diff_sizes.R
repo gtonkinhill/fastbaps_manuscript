@@ -23,22 +23,22 @@ tree.rooted <- root(tree, outgroup=new.outgroup, resolve.root=TRUE)
 
 
 temp.data <- hiv.data
-temp.data$snp.matrix <- temp.data$snp.matrix[sample(1:nrow(temp.data$snp.matrix), 1000),]
+temp.data$snp.matrix <- temp.data$snp.matrix[, sample(1:nrow(temp.data$snp.matrix), 1000)]
 temp.data <- optimise_prior(temp.data, type = 'baps')
-missing.tips <- tree$tip.label[!(tree$tip.label %in% colnames(temp.data$snp.matrix))]
-temp.tree <- ape::drop.tip(tree, tip = missing.tips)
+missing.tips <- tree.rooted$tip.label[!(tree.rooted$tip.label %in% colnames(temp.data$snp.matrix))]
+temp.tree <- ape::drop.tip(tree.rooted, tip = missing.tips)
 system.time({best.baps.partition <- fastbaps::best_baps_partition(temp.data, temp.tree)})
 
 temp.data <- hiv.data
-temp.data$snp.matrix <- temp.data$snp.matrix[sample(1:nrow(temp.data$snp.matrix), 10000),]
+temp.data$snp.matrix <- temp.data$snp.matrix[, sample(1:nrow(temp.data$snp.matrix), 10000)]
 temp.data <- optimise_prior(temp.data, type = 'baps')
-missing.tips <- tree$tip.label[!(tree$tip.label %in% colnames(temp.data$snp.matrix))]
-temp.tree <- ape::drop.tip(tree, tip = missing.tips)
+missing.tips <- tree.rooted$tip.label[!(tree.rooted$tip.label %in% colnames(temp.data$snp.matrix))]
+temp.tree <- ape::drop.tip(tree.rooted, tip = missing.tips)
 system.time({best.baps.partition <- fastbaps::best_baps_partition(temp.data, temp.tree)})
 
 temp.data <- hiv.data
-temp.data$snp.matrix <- temp.data$snp.matrix[sample(1:nrow(temp.data$snp.matrix), 100000),]
+temp.data$snp.matrix <- temp.data$snp.matrix[, sample(1:nrow(temp.data$snp.matrix), 100000)]
 temp.data <- optimise_prior(temp.data, type = 'baps')
-missing.tips <- tree$tip.label[!(tree$tip.label %in% colnames(temp.data$snp.matrix))]
-temp.tree <- ape::drop.tip(tree, tip = missing.tips)
+missing.tips <- tree.rooted$tip.label[!(tree.rooted$tip.label %in% colnames(temp.data$snp.matrix))]
+temp.tree <- ape::drop.tip(tree.rooted, tip = missing.tips)
 system.time({best.baps.partition <- fastbaps::best_baps_partition(temp.data, temp.tree)})
