@@ -5,3 +5,5 @@ nohup /usr/bin/time -v Rscript --vanilla ./fastbaps_manuscript/HIV_run_fastbaps_
 nohup /usr/bin/time -v Rscript --vanilla ./fastbaps_manuscript/HIV_run_baps_prior.R > ./data/HIV_run_baps_prior.log 2>&1 &
 
 nohup /usr/bin/time -v Rscript --vanilla ./fastbaps_manuscript/HIV_run_ward_bbp.R > ./data/HIV_run_ward_bbp.log 2>&1 &
+
+nohup /usr/bin/time -v Rscript --vanilla ./fastbaps_manuscript/run_fastbaps_HIV_fasttree.R > ./data/HIV_run_fasttree_bp.log 2>&1 &
