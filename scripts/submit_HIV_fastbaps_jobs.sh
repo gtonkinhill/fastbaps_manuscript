@@ -12,4 +12,6 @@ nohup /usr/bin/time -v Rscript --vanilla ./fastbaps_manuscript/scripts/HIV_run_b
 
 nohup /usr/bin/time -v Rscript --vanilla ./fastbaps_manuscript/scripts/HIV_run_baps_prior_genie.R > ./data/HIV_run_baps_prior_genie.log 2>&1 &
 
+nohup /usr/bin/time -v Rscript --vanilla ./fastbaps_manuscript/scripts/HIV_run_baps_prior_initK1000.R > ./data/HIV_run_baps_prior_initK1000.log 2>&1 &
+
 
