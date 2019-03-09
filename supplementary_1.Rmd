@@ -295,7 +295,7 @@ dendro <- as.dendrogram(fast_baps(n.meng.data))
 heatmap.2(boot.result, dendro, dendro, tracecol = NA, labRow = FALSE, labCol = FALSE)
 ```
 
-##Staphylococcus Aureus 
+  ##Staphylococcus Aureus 
 
 ```{r, cache=TRUE}
 s.aus.data <- import_fasta_sparse_nt("./data/staphylococcus_aureus/staphylococcus_aureus_core_gene_alignment.snps.aln", prior = "baps")
