@@ -32,6 +32,7 @@ library(stringr)
 library(dplyr)
 library(Matrix)
 library(ggbeeswarm)
+library(gplots)
 
 set.seed(1234)
 ```
@@ -291,7 +292,7 @@ n.meng.data <- optimise_prior(n.meng.data, type = "optimise.baps")
 boot.result <- boot_fast_baps(n.meng.data)
 dendro <- as.dendrogram(fast_baps(n.meng.data))
 
-gplots::heatmap.2(boot.result, dendro, dendro, tracecol = NA, labRow = FALSE, labCol = FALSE)
+heatmap.2(boot.result, dendro, dendro, tracecol = NA, labRow = FALSE, labCol = FALSE)
 ```
 
 ##Staphylococcus Aureus 
